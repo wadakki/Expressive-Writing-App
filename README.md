@@ -92,4 +92,4 @@
   記入していない日は筆記開示による効果をLINEで通知する。
 
 ##　画面遷移図のURL
-https://www.figma.com/design/iP6c8lZISGSxfOIV3WiTdz/%E7%84%A1%E9%A1%8C?node-id=3-483&t=VhqE8mXWGCtIeKfF-0
+https://www.figma.com/design/iP6c8lZISGSxfOIV3WiTdz/%E7%84%A1%E9%A1%8C?node-id=0-1&t=VhqE8mXWGCtIeKfF-1
