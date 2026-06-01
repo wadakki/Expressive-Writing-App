@@ -93,3 +93,6 @@
 
 ##　画面遷移図のURL
 https://www.figma.com/design/iP6c8lZISGSxfOIV3WiTdz/%E7%84%A1%E9%A1%8C?node-id=0-1&t=VhqE8mXWGCtIeKfF-1
+
+##　ER図のURL
+[![Image from Gyazo](https://i.gyazo.com/b7ff4b0d0660c1d063c949d9f08fc6a3.png)](https://gyazo.com/b7ff4b0d0660c1d063c949d9f08fc6a3)
