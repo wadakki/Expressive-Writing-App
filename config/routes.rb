@@ -1,6 +1,9 @@
 Rails.application.routes.draw do
   resources :posts
   resources :users, only: %i[new create]
+  get "terms", to: "static_pages#terms"
+  get "privacy", to: "static_pages#privacy"
+  get "contact", to: "static_pages#contact"
   root "posts#index"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
