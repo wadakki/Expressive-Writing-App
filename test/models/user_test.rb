@@ -14,6 +14,19 @@ class UserTest < ActiveSupport::TestCase
     assert_includes user.errors[:name], "can't be blank"
   end
 
+  test "allows a name with 50 characters" do
+    user = build_user(name: "a" * 50)
+
+    assert user.valid?
+  end
+
+  test "rejects a name longer than 50 characters" do
+    user = build_user(name: "a" * 51)
+
+    assert_not user.valid?
+    assert_includes user.errors[:name], "is too long (maximum is 50 characters)"
+  end
+
   test "requires an email" do
     user = build_user(email: nil)
 
