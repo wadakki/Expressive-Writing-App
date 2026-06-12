@@ -1,0 +1,93 @@
+ja:
+  application:
+    title: 筆記開示アプリ
+  shared:
+    header:
+      logo_alt: 筆記開示アプリ
+      app_name: 筆記開示アプリ
+      tagline: こころを整える筆記開示
+      navigation: メインナビゲーション
+      signup: ユーザー登録
+    footer:
+      navigation: フッターナビゲーション
+      terms: 利用規約
+      privacy: プライバシーポリシー
+      contact: お問い合わせ
+      copyright: "%{year} 筆記開示アプリ"
+      tagline: 今日の気持ちを、安心して言葉にできる場所。
+  users:
+    new:
+      title: ユーザー登録
+      eyebrow: アカウントを作成
+      heading: ユーザー登録
+      description: 筆記開示を始めるためのアカウントを作成します。
+      error_heading: 入力内容を確認してください
+      name_label: 名前
+      name_hint: 50文字以内で入力してください。
+      email_label: メールアドレス
+      password_label: パスワード
+      password_hint: 8文字以上で入力してください。
+      password_confirmation_label: パスワード（確認）
+      submit: 登録する
+    create:
+      success: ユーザー登録が完了しました
+  static_pages:
+    home:
+      title: 筆記開示アプリ
+      eyebrow: 筆記開示でこころを整える
+      heading: 気持ちを言葉にして、こころを整える
+      description: 今日起きたことや感じたことを、誰にも見られない安心できる場所で書き出してみませんか。設問に沿って記録することで、感情と思考の整理をお手伝いします。
+      signup: ユーザー登録を始める
+      features:
+        private:
+          title: 安心して書ける
+          description: 記録した内容は自分のためのもの。気持ちを率直に書き出せます。
+        guided:
+          title: 設問に沿って整理
+          description: 何から書けばよいか迷わないよう、筆記開示のための設問をご用意します。
+        reflection:
+          title: 変化を振り返る
+          description: 書く前後の気持ちを記録し、自分自身の変化を振り返れます。
+    terms:
+      title: 利用規約
+      introduction: 本サービスをご利用いただく際の基本的な条件を定めています。
+      sections:
+        service:
+          title: サービスの利用
+          body: 利用者は、法令および本規約を守り、自身の責任で本サービスを利用するものとします。
+        prohibited:
+          title: 禁止事項
+          body: 他者への迷惑行為、不正アクセス、サービス運営を妨げる行為、法令に反する行為を禁止します。
+        disclaimer:
+          title: 免責事項
+          body: 本サービスは医療行為を提供するものではありません。心身の不調が続く場合は、医療機関や専門家へご相談ください。
+        changes:
+          title: 規約の変更
+          body: 必要に応じて本規約を変更する場合があります。重要な変更は本サービス上でお知らせします。
+    privacy:
+      title: プライバシーポリシー
+      introduction: 利用者の個人情報を適切に取り扱うための方針です。
+      sections:
+        collection:
+          title: 取得する情報
+          body: アカウント登録時の名前、メールアドレス、およびサービス利用時に入力された情報を取得します。
+        purpose:
+          title: 利用目的
+          body: 本人確認、サービス提供、利用状況の改善、お問い合わせ対応のために利用します。
+        sharing:
+          title: 第三者提供
+          body: 法令に基づく場合を除き、本人の同意なく個人情報を第三者へ提供しません。
+        security:
+          title: 安全管理
+          body: 個人情報への不正アクセス、紛失、漏えいを防ぐため、合理的な安全管理措置を講じます。
+    contact:
+      title: お問い合わせ
+      introduction: サービスに関するご意見やご質問を受け付けています。
+      sections:
+        before_contact:
+          title: お問い合わせの前に
+          body: 不具合については、発生した画面、操作手順、表示されたメッセージを添えていただくと確認がスムーズです。
+        response:
+          title: 対応について
+          body: 内容を確認のうえ、必要に応じて運営者からご案内します。回答にはお時間をいただく場合があります。
+          details: お問い合わせ窓口の詳細は、サービス公開時に本ページでご案内します。

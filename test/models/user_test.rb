@@ -11,7 +11,7 @@ class UserTest < ActiveSupport::TestCase
     user = build_user(name: nil)
 
     assert_not user.valid?
-    assert_includes user.errors[:name], "can't be blank"
+    assert_includes user.errors[:name], "を入力してください"
   end
 
   test "allows a name with 50 characters" do
@@ -24,21 +24,21 @@ class UserTest < ActiveSupport::TestCase
     user = build_user(name: "a" * 51)
 
     assert_not user.valid?
-    assert_includes user.errors[:name], "is too long (maximum is 50 characters)"
+    assert_includes user.errors[:name], "は50文字以内で入力してください"
   end
 
   test "requires an email" do
     user = build_user(email: nil)
 
     assert_not user.valid?
-    assert_includes user.errors[:email], "can't be blank"
+    assert_includes user.errors[:email], "を入力してください"
   end
 
   test "requires a valid email format" do
     user = build_user(email: "invalid")
 
     assert_not user.valid?
-    assert_includes user.errors[:email], "is invalid"
+    assert_includes user.errors[:email], "は不正な値です"
   end
 
   test "requires a unique email regardless of case" do
@@ -46,21 +46,21 @@ class UserTest < ActiveSupport::TestCase
     user = build_user(email: "USER@example.com")
 
     assert_not user.valid?
-    assert_includes user.errors[:email], "has already been taken"
+    assert_includes user.errors[:email], "はすでに存在します"
   end
 
   test "requires a password with at least eight characters" do
     user = build_user(password: "short", password_confirmation: "short")
 
     assert_not user.valid?
-    assert_includes user.errors[:password], "is too short (minimum is 8 characters)"
+    assert_includes user.errors[:password], "は8文字以上で入力してください"
   end
 
   test "requires password confirmation to match" do
     user = build_user(password_confirmation: "different-password")
 
     assert_not user.valid?
-    assert_includes user.errors[:password_confirmation], "doesn't match Password"
+    assert_includes user.errors[:password_confirmation], "とパスワードの入力が一致しません"
   end
 
   test "authenticates with Sorcery" do

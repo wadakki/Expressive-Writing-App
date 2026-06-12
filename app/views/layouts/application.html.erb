@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "Myapp" %></title>
+    <title><%= content_for(:title) || t("application.title") %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
@@ -17,7 +17,19 @@
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
   </head>
 
-  <body>
-    <%= yield %>
+  <body class="flex min-h-screen flex-col bg-blue-50 text-slate-900">
+    <%= render "shared/header" %>
+
+    <div class="flex-1">
+      <% flash.each do |type, message| %>
+        <div class="mx-auto mt-4 max-w-3xl rounded-lg px-4 py-3 text-sm font-medium <%= type == "alert" ? "bg-red-50 text-red-800" : "border border-blue-200 bg-blue-100 text-blue-900" %>"
+             role="status">
+          <%= message %>
+        </div>
+      <% end %>
+      <%= yield %>
+    </div>
+
+    <%= render "shared/footer" %>
   </body>
 </html>
