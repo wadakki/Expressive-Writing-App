@@ -7,6 +7,13 @@ class UserTest < ActiveSupport::TestCase
     assert user.valid?
   end
 
+  test "requires a name" do
+    user = build_user(name: nil)
+
+    assert_not user.valid?
+    assert_includes user.errors[:name], "can't be blank"
+  end
+
   test "requires an email" do
     user = build_user(email: nil)
 
@@ -53,8 +60,8 @@ class UserTest < ActiveSupport::TestCase
 
   private
 
-  def build_user(email: "user@example.com", password: "password",
+  def build_user(name: "Test User", email: "user@example.com", password: "password",
                  password_confirmation: "password")
-    User.new(email:, password:, password_confirmation:)
+    User.new(name:, email:, password:, password_confirmation:)
   end
 end
