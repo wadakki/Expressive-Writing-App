@@ -1,12 +1,12 @@
 <footer class="border-t border-blue-200 bg-blue-950 text-blue-100">
   <div class="mx-auto max-w-6xl px-4 py-6 text-center text-sm sm:px-6">
-    <nav class="flex flex-wrap justify-center gap-x-6 gap-y-2" aria-label="フッターナビゲーション">
-      <%= link_to "利用規約", terms_path, class: "transition hover:text-white hover:underline" %>
-      <%= link_to "プライバシーポリシー", privacy_path, class: "transition hover:text-white hover:underline" %>
-      <%= link_to "お問い合わせ", contact_path, class: "transition hover:text-white hover:underline" %>
+    <nav class="flex flex-wrap justify-center gap-x-6 gap-y-2" aria-label="<%= t(".navigation") %>">
+      <%= link_to t(".terms"), terms_path, class: "transition hover:text-white hover:underline" %>
+      <%= link_to t(".privacy"), privacy_path, class: "transition hover:text-white hover:underline" %>
+      <%= link_to t(".contact"), contact_path, class: "transition hover:text-white hover:underline" %>
     </nav>
     <div class="my-4 border-t border-blue-800"></div>
-    <p>&copy; <%= Time.current.year %> 筆記開示アプリ</p>
-    <p class="mt-1 text-xs text-blue-300">今日の気持ちを、安心して言葉にできる場所。</p>
+    <p>&copy; <%= t(".copyright", year: Time.current.year) %></p>
+    <p class="mt-1 text-xs text-blue-300"><%= t(".tagline") %></p>
   </div>
 </footer>
