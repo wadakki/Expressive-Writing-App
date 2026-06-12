@@ -50,6 +50,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     assert_select "[role=alert]", text: /入力内容を確認してください/
+    assert_select "[role=alert]", text: /名前を入力してください/
+    assert_select "[role=alert]", text: /メールアドレスは不正な値です/
     assert_select "form[action=?]", users_path
   end
 end
