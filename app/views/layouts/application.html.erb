@@ -18,6 +18,12 @@
   </head>
 
   <body>
+    <% flash.each do |type, message| %>
+      <div class="mx-auto mt-4 max-w-3xl rounded-lg px-4 py-3 text-sm font-medium <%= type == "alert" ? "bg-red-50 text-red-800" : "bg-teal-50 text-teal-800" %>"
+           role="status">
+        <%= message %>
+      </div>
+    <% end %>
     <%= yield %>
   </body>
 </html>
