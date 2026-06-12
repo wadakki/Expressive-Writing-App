@@ -8,7 +8,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", "ユーザー登録"
     assert_select "header"
     assert_select "footer"
-    assert_select "header img[src=?]", "/expressive-writing-logo.png"
+    assert_select "header img[src*=?][alt=?]", "expressive-writing-logo", "筆記開示アプリ"
     assert_select "label[for=user_name]", "名前"
     assert_select "footer a[href=?]", terms_path, "利用規約"
     assert_select "footer a[href=?]", privacy_path, "プライバシーポリシー"
