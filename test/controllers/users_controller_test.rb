@@ -77,4 +77,24 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     assert_select "[role=alert]", text: /メールアドレスはすでに存在します/
   end
+
+  test "rejects a name longer than 50 characters" do
+    assert_no_difference("User.count") do
+      post users_url, params: {
+        user: {
+          name: "あ" * 51,
+          email: "long-name@example.com",
+          password: "password",
+          password_confirmation: "password"
+        }
+      }
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "[role=alert]", text: /名前は50文字以内で入力してください/
+    assert_select "input[name=?]", "user[name]" do |elements|
+      assert_equal "あ" * 51, elements.first["value"]
+      assert_nil elements.first["maxlength"]
+    end
+  end
 end
