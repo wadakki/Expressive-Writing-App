@@ -13,13 +13,12 @@
     <% end %>
 
     <nav class="flex shrink-0 items-center gap-3" aria-label="<%= t(".navigation") %>">
-      <span class="hidden text-sm text-slate-600 sm:inline">
-        <%= t(".logged_in_as", name: current_user.name) %>
-      </span>
-      <%= link_to t(".logout"),
-                  logout_path,
-                  data: { turbo_method: :delete },
+      <%= link_to t(".login"),
+                  login_path,
                   class: "rounded-lg border border-blue-600 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" %>
+      <%= link_to t(".signup"),
+                  new_user_path,
+                  class: "rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" %>
     </nav>
   </div>
 </header>

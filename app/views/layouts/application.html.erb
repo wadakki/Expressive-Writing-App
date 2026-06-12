@@ -18,7 +18,11 @@
   </head>
 
   <body class="flex min-h-screen flex-col bg-blue-50 text-slate-900">
-    <%= render "shared/header" %>
+    <% if logged_in? %>
+      <%= render "shared/header" %>
+    <% else %>
+      <%= render "shared/before_login_header" %>
+    <% end %>
 
     <div class="flex-1">
       <% flash.each do |type, message| %>
