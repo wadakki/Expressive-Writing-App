@@ -6,6 +6,9 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", "ユーザー登録"
+    assert_select "header"
+    assert_select "footer"
+    assert_select "label[for=user_name]", "名前"
     assert_select "form[action=?][method=post]", users_path
     assert_select "input[name=?]", "user[name]"
     assert_select "input[name=?]", "user[email]"

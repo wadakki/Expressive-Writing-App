@@ -17,13 +17,37 @@
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
   </head>
 
-  <body>
-    <% flash.each do |type, message| %>
-      <div class="mx-auto mt-4 max-w-3xl rounded-lg px-4 py-3 text-sm font-medium <%= type == "alert" ? "bg-red-50 text-red-800" : "bg-teal-50 text-teal-800" %>"
-           role="status">
-        <%= message %>
+  <body class="flex min-h-screen flex-col bg-blue-50 text-slate-900">
+    <header class="border-b border-blue-200 bg-white shadow-sm">
+      <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
+        <%= link_to root_path, class: "group" do %>
+          <span class="block text-xl font-bold tracking-tight text-blue-700 group-hover:text-blue-800">Expressive Writing</span>
+          <span class="block text-xs text-slate-500">こころを整える筆記開示</span>
+        <% end %>
+
+        <nav aria-label="メインナビゲーション">
+          <%= link_to "ユーザー登録",
+                      new_user_path,
+                      class: "rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" %>
+        </nav>
       </div>
-    <% end %>
-    <%= yield %>
+    </header>
+
+    <div class="flex-1">
+      <% flash.each do |type, message| %>
+        <div class="mx-auto mt-4 max-w-3xl rounded-lg px-4 py-3 text-sm font-medium <%= type == "alert" ? "bg-red-50 text-red-800" : "border border-blue-200 bg-blue-100 text-blue-900" %>"
+             role="status">
+          <%= message %>
+        </div>
+      <% end %>
+      <%= yield %>
+    </div>
+
+    <footer class="border-t border-blue-200 bg-blue-950 text-blue-100">
+      <div class="mx-auto max-w-6xl px-4 py-6 text-center text-sm sm:px-6">
+        <p>&copy; <%= Time.current.year %> Expressive Writing</p>
+        <p class="mt-1 text-xs text-blue-300">今日の気持ちを、安心して言葉にできる場所。</p>
+      </div>
+    </footer>
   </body>
 </html>
