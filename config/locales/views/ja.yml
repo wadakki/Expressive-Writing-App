@@ -8,6 +8,16 @@ ja:
       tagline: こころを整える筆記開示
       navigation: メインナビゲーション
       signup: ユーザー登録
+      login: ログイン
+      logout: ログアウト
+      logged_in_as: "%{name}さん"
+    before_login_header:
+      logo_alt: 筆記開示アプリ
+      app_name: 筆記開示アプリ
+      tagline: こころを整える筆記開示
+      navigation: メインナビゲーション
+      signup: ユーザー登録
+      login: ログイン
     footer:
       navigation: フッターナビゲーション
       terms: 利用規約
@@ -31,6 +41,22 @@ ja:
       submit: 登録する
     create:
       success: ユーザー登録が完了しました
+  user_sessions:
+    new:
+      title: ログイン
+      eyebrow: アカウントにログイン
+      heading: ログイン
+      description: 登録したメールアドレスとパスワードを入力してください。
+      email_label: メールアドレス
+      password_label: パスワード
+      submit: ログインする
+      signup_prompt: アカウントをお持ちでない方は
+      signup_link: ユーザー登録
+    create:
+      success: ログインしました
+      failure: メールアドレスまたはパスワードが正しくありません
+    destroy:
+      success: ログアウトしました
   static_pages:
     home:
       title: 筆記開示アプリ
