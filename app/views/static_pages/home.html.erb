@@ -1,0 +1,36 @@
+<% content_for :title, "Expressive Writing" %>
+
+<main>
+  <section class="bg-gradient-to-b from-blue-50 via-white to-blue-50 px-4 py-16 sm:px-6 sm:py-24">
+    <div class="mx-auto max-w-4xl text-center">
+      <p class="text-sm font-semibold tracking-wide text-blue-600">EXPRESSIVE WRITING</p>
+      <h1 class="mt-4 text-4xl font-bold tracking-tight text-blue-950 sm:text-5xl">
+        気持ちを言葉にして、こころを整える
+      </h1>
+      <p class="mx-auto mt-6 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
+        今日起きたことや感じたことを、誰にも見られない安心できる場所で書き出してみませんか。
+        設問に沿って記録することで、感情と思考の整理をお手伝いします。
+      </p>
+      <div class="mt-10">
+        <%= link_to "ユーザー登録を始める",
+                    new_user_path,
+                    class: "inline-flex rounded-xl bg-blue-600 px-7 py-3 text-base font-semibold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" %>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-white px-4 py-14 sm:px-6">
+    <div class="mx-auto grid max-w-5xl gap-6 md:grid-cols-3">
+      <% [
+        ["安心して書ける", "記録した内容は自分のためのもの。気持ちを率直に書き出せます。"],
+        ["設問に沿って整理", "何から書けばよいか迷わないよう、筆記開示のための設問をご用意します。"],
+        ["変化を振り返る", "書く前後の気持ちを記録し、自分自身の変化を振り返れます。"]
+      ].each do |title, description| %>
+        <div class="rounded-2xl border border-blue-100 bg-blue-50/60 p-6">
+          <h2 class="text-lg font-semibold text-blue-900"><%= title %></h2>
+          <p class="mt-3 text-sm leading-7 text-slate-600"><%= description %></p>
+        </div>
+      <% end %>
+    </div>
+  </section>
+</main>
