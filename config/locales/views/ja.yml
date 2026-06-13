@@ -1,6 +1,7 @@
 ja:
   application:
     title: 筆記開示アプリ
+    authentication_required: ログインしてください
   shared:
     header:
       logo_alt: 筆記開示アプリ
@@ -11,6 +12,7 @@ ja:
       login: ログイン
       logout: ログアウト
       logged_in_as: "%{name}さん"
+      new_writing_entry: 筆記開示を始める
     before_login_header:
       logo_alt: 筆記開示アプリ
       app_name: 筆記開示アプリ
@@ -57,6 +59,28 @@ ja:
       failure: メールアドレスまたはパスワードが正しくありません
     destroy:
       success: ログアウトしました
+  writing_entries:
+    new:
+      title: 筆記開示
+      eyebrow: EXPRESSIVE WRITING
+      heading: 今日の気持ちを書き出す
+      description: 誤字や脱字を気にせず、思いついたことをそのまま書いてください。入力内容は他の利用者には公開されません。
+      before_happiness:
+        heading: 書き始める前の気持ち
+        description: 現在の幸福度を1から10で選んでください。1が低く、10が高い状態です。
+        label: 書く前の幸福度
+      questions:
+        event: 今日、実際に起きたことを思いつく限り書いてください。
+        negative_emotion: 起きたことの中で、ネガティブな感情を抱いた場面と感情を書いてください。
+        positive_emotion: 起きたことの中で、ポジティブな感情を抱いた場面と感情を書いてください。
+        unforgiven_target: 起きたことの中で、許せない相手や出来事について、感じたことを何も考えずに書き出してください。
+        tomorrow_hope: 明日をどのような一日にしたいですか。
+      character_limit: 3000文字以内
+      after_happiness:
+        heading: 書き終えた後の気持ち
+        description: 書き終えた現在の幸福度を1から10で選んでください。
+        label: 書いた後の幸福度
+      submit: 投稿する
   static_pages:
     home:
       title: 筆記開示アプリ
