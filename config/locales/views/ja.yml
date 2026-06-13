@@ -65,6 +65,7 @@ ja:
       eyebrow: EXPRESSIVE WRITING
       heading: 今日の気持ちを書き出す
       description: 誤字や脱字を気にせず、思いついたことをそのまま書いてください。入力内容は他の利用者には公開されません。
+      error_heading: 入力内容を確認してください
       before_happiness:
         heading: 書き始める前の気持ち
         description: 現在の幸福度を1から10で選んでください。1が低く、10が高い状態です。
@@ -80,7 +81,11 @@ ja:
         heading: 書き終えた後の気持ち
         description: 書き終えた現在の幸福度を1から10で選んでください。
         label: 書いた後の幸福度
+      save_draft: 下書き保存
       submit: 投稿する
+    create:
+      draft_success: 下書きを保存しました
+      completed_success: 投稿を保存しました
   static_pages:
     home:
       title: 筆記開示アプリ
