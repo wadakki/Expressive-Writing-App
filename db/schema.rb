@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_12_054620) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_12_123009) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -23,4 +23,24 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_12_054620) do
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
   end
+
+  create_table "writing_entries", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.integer "before_happiness_score"
+    t.integer "after_happiness_score"
+    t.text "event_detail"
+    t.text "negative_emotion_detail"
+    t.text "positive_emotion_detail"
+    t.text "unforgiven_target_detail"
+    t.text "tomorrow_hope"
+    t.integer "status", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_writing_entries_on_user_id"
+    t.check_constraint "after_happiness_score IS NULL OR after_happiness_score >= 1 AND after_happiness_score <= 10", name: "writing_entries_after_happiness_score_range"
+    t.check_constraint "before_happiness_score IS NULL OR before_happiness_score >= 1 AND before_happiness_score <= 10", name: "writing_entries_before_happiness_score_range"
+    t.check_constraint "status = ANY (ARRAY[0, 1])", name: "writing_entries_status_values"
+  end
+
+  add_foreign_key "writing_entries", "users"
 end
