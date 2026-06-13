@@ -2,9 +2,18 @@ ja:
   activerecord:
     models:
       user: ユーザー
+      writing_entry: 筆記開示
     attributes:
       user:
         name: 名前
         email: メールアドレス
         password: パスワード
         password_confirmation: パスワード（確認）
+      writing_entry:
+        before_happiness_score: 書く前の幸福度
+        after_happiness_score: 書いた後の幸福度
+        event_detail: 実際に起きたこと
+        negative_emotion_detail: ネガティブな感情
+        positive_emotion_detail: ポジティブな感情
+        unforgiven_target_detail: 許せない相手や出来事
+        tomorrow_hope: 明日の希望
