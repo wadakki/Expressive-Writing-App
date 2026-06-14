@@ -11,8 +11,10 @@ class WritingEntry < ApplicationRecord
 
   enum :status, { draft: 0, completed: 1 }, default: :draft, validate: true
 
+  validates(*DETAIL_ATTRIBUTES, presence: true, if: :completed?)
   validates(*DETAIL_ATTRIBUTES, length: { maximum: 3000 })
   validates :before_happiness_score, :after_happiness_score,
-            numericality: { only_integer: true, in: 1..10 },
-            allow_nil: true
+            presence: true, if: :completed?
+  validates :before_happiness_score, :after_happiness_score,
+            numericality: { only_integer: true, in: 1..10 }, allow_nil: true
 end

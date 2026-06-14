@@ -11,14 +11,14 @@ class WritingEntryTest < ActiveSupport::TestCase
   end
 
   test "belongs to a user" do
-    entry = @user.writing_entries.create!
+    entry = @user.writing_entries.create!(valid_attributes)
 
     assert_equal @user, entry.user
     assert_includes @user.writing_entries, entry
   end
 
   test "destroys entries when the user is destroyed" do
-    entry = @user.writing_entries.create!
+    entry = @user.writing_entries.create!(valid_attributes)
 
     assert_difference("WritingEntry.count", -1) do
       @user.destroy!
@@ -35,7 +35,7 @@ class WritingEntryTest < ActiveSupport::TestCase
   end
 
   test "rejects an invalid status" do
-    entry = @user.writing_entries.build(status: :invalid)
+    entry = @user.writing_entries.build(valid_attributes.merge(status: :invalid))
 
     assert_not entry.valid?
     assert_includes entry.errors[:status], "は一覧にありません"
@@ -43,10 +43,10 @@ class WritingEntryTest < ActiveSupport::TestCase
 
   test "accepts happiness scores from 1 through 10" do
     [ 1, 10 ].each do |score|
-      entry = @user.writing_entries.build(
+      entry = @user.writing_entries.build(valid_attributes.merge(
         before_happiness_score: score,
         after_happiness_score: score
-      )
+      ))
 
       assert entry.valid?
     end
@@ -54,7 +54,9 @@ class WritingEntryTest < ActiveSupport::TestCase
 
   test "rejects before happiness scores outside 1 through 10" do
     [ 0, 11 ].each do |score|
-      entry = @user.writing_entries.build(before_happiness_score: score)
+      entry = @user.writing_entries.build(
+        valid_attributes.merge(before_happiness_score: score)
+      )
 
       assert_not entry.valid?
       assert entry.errors[:before_happiness_score].any?
@@ -63,20 +65,44 @@ class WritingEntryTest < ActiveSupport::TestCase
 
   test "rejects after happiness scores outside 1 through 10" do
     [ 0, 11 ].each do |score|
-      entry = @user.writing_entries.build(after_happiness_score: score)
+      entry = @user.writing_entries.build(
+        valid_attributes.merge(after_happiness_score: score)
+      )
 
       assert_not entry.valid?
       assert entry.errors[:after_happiness_score].any?
     end
   end
 
-  test "allows happiness scores to be omitted while drafting" do
-    assert @user.writing_entries.build.valid?
+  test "requires happiness scores" do
+    %i[before_happiness_score after_happiness_score].each do |attribute|
+      entry = @user.writing_entries.build(
+        valid_attributes.merge(attribute => nil, status: :completed)
+      )
+
+      assert_not entry.valid?
+      assert_includes entry.errors[attribute], "を入力してください"
+    end
+  end
+
+  test "requires all detail attributes" do
+    WritingEntry::DETAIL_ATTRIBUTES.each do |attribute|
+      entry = @user.writing_entries.build(
+        valid_attributes.merge(attribute => nil, status: :completed)
+      )
+
+      assert_not entry.valid?
+      assert_includes entry.errors[attribute], "を入力してください"
+    end
+  end
+
+  test "allows required fields to be omitted while drafting" do
+    assert @user.writing_entries.build(status: :draft).valid?
   end
 
   test "accepts detail attributes with 3000 characters" do
     WritingEntry::DETAIL_ATTRIBUTES.each do |attribute|
-      entry = @user.writing_entries.build(attribute => "あ" * 3000)
+      entry = @user.writing_entries.build(valid_attributes.merge(attribute => "あ" * 3000))
 
       assert entry.valid?, "#{attribute} should allow 3000 characters"
     end
@@ -84,7 +110,7 @@ class WritingEntryTest < ActiveSupport::TestCase
 
   test "rejects detail attributes longer than 3000 characters" do
     WritingEntry::DETAIL_ATTRIBUTES.each do |attribute|
-      entry = @user.writing_entries.build(attribute => "あ" * 3001)
+      entry = @user.writing_entries.build(valid_attributes.merge(attribute => "あ" * 3001))
 
       assert_not entry.valid?, "#{attribute} should reject 3001 characters"
       assert_includes(
@@ -92,5 +118,19 @@ class WritingEntryTest < ActiveSupport::TestCase
         "は3000文字以内で入力してください"
       )
     end
+  end
+
+  private
+
+  def valid_attributes
+    {
+      before_happiness_score: 5,
+      after_happiness_score: 7,
+      event_detail: "今日あったこと",
+      negative_emotion_detail: "不安を感じた",
+      positive_emotion_detail: "うれしかった",
+      unforgiven_target_detail: "まだ許せないこと",
+      tomorrow_hope: "穏やかに過ごしたい"
+    }
   end
 end

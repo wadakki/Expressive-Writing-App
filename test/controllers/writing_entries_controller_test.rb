@@ -27,17 +27,17 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", "今日の気持ちを書き出す"
     assert_select "form[action=?][method=post]", writing_entries_path
-    assert_select "input[name=?][min=1][max=10][step=1]",
+    assert_select "input[name=?][min=1][max=10][step=1][required]",
                   "writing_entry[before_happiness_score]"
-    assert_select "input[name=?][min=1][max=10][step=1]",
+    assert_select "input[name=?][min=1][max=10][step=1][required]",
                   "writing_entry[after_happiness_score]"
 
     WritingEntry::DETAIL_ATTRIBUTES.each do |attribute|
-      assert_select "textarea[name=?][maxlength=3000]",
+      assert_select "textarea[name=?][maxlength=3000][required]",
                     "writing_entry[#{attribute}]"
     end
 
-    assert_select "button[name=?][value=draft]", "writing_entry[status]", "下書き保存"
+    assert_select "button[name=?][value=draft][formnovalidate]", "writing_entry[status]", "下書き保存"
     assert_select "button[name=?][value=completed]", "writing_entry[status]", "投稿する"
   end
 
@@ -106,12 +106,17 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     login_as(@user)
 
     assert_difference("@user.writing_entries.count", 1) do
-      post writing_entries_url, params: {
-        writing_entry: valid_writing_entry_params.merge(status: "draft")
-      }
+      post writing_entries_url, params: { writing_entry: { status: "draft" } }
     end
 
-    assert_predicate @user.writing_entries.order(:created_at).last, :draft?
+    writing_entry = @user.writing_entries.order(:created_at).last
+
+    assert_predicate writing_entry, :draft?
+    assert_nil writing_entry.before_happiness_score
+    assert_nil writing_entry.after_happiness_score
+    WritingEntry::DETAIL_ATTRIBUTES.each do |attribute|
+      assert_nil writing_entry.public_send(attribute)
+    end
     assert_redirected_to root_url
     assert_equal "下書きを保存しました", flash[:notice]
   end
@@ -132,6 +137,24 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_select "[role=alert]", text: /入力内容を確認してください/
     assert_select "[role=alert]", text: /実際に起きたことは3000文字以内で入力してください/
     assert_select "textarea[name=?]", "writing_entry[event_detail]", text: "あ" * 3001
+  end
+
+  test "renders the form with errors when required fields are blank" do
+    login_as(@user)
+
+    assert_no_difference("WritingEntry.count") do
+      post writing_entries_url, params: {
+        writing_entry: {
+          status: "completed"
+        }
+      }
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "[role=alert]", text: /書く前の幸福度を入力してください/
+    assert_select "[role=alert]", text: /書いた後の幸福度を入力してください/
+    assert_select "[role=alert]", text: /実際に起きたことを入力してください/
+    assert_select "[role=alert]", text: /明日の希望を入力してください/
   end
 
   private
