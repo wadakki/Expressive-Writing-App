@@ -17,6 +17,92 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "ログインしてください", flash[:alert]
   end
 
+  test "redirects guests from the writing entry index to login" do
+    get writing_entries_url
+
+    assert_redirected_to login_url
+    assert_equal "ログインしてください", flash[:alert]
+  end
+
+  test "shows only the current user's completed entries newest first" do
+    other_user = User.create!(
+      name: "別ユーザー",
+      email: "index-other@example.com",
+      password: "password",
+      password_confirmation: "password"
+    )
+    older_entry = create_writing_entry(
+      @user,
+      event_detail: "古い完了投稿",
+      created_at: 2.days.ago
+    )
+    newer_entry = create_writing_entry(
+      @user,
+      event_detail: "新しい完了投稿",
+      created_at: 1.day.ago
+    )
+    draft_entry = create_writing_entry(
+      @user,
+      event_detail: "表示されない下書き",
+      status: :draft,
+      created_at: Time.current
+    )
+    other_entry = create_writing_entry(
+      other_user,
+      event_detail: "表示されない他ユーザー投稿",
+      created_at: Time.current
+    )
+    login_as(@user)
+
+    get writing_entries_url
+
+    assert_response :success
+    assert_select "h1", "これまでの筆記開示"
+    assert_select "article", count: 2
+    assert_select "article##{dom_id(newer_entry)}"
+    assert_select "article##{dom_id(older_entry)}"
+    assert_select "article##{dom_id(draft_entry)}", count: 0
+    assert_select "article##{dom_id(other_entry)}", count: 0
+    assert_select "article" do |articles|
+      assert_equal dom_id(newer_entry), articles.first["id"]
+      assert_equal dom_id(older_entry), articles[1]["id"]
+    end
+  end
+
+  test "shows an empty state when the current user has no completed entries" do
+    create_writing_entry(
+      @user,
+      event_detail: "下書き",
+      status: :draft
+    )
+    login_as(@user)
+
+    get writing_entries_url
+
+    assert_response :success
+    assert_select "article", count: 0
+    assert_select "h2", "まだ投稿はありません"
+    assert_select "a[href=?]", new_writing_entry_path, "新しく書く"
+  end
+
+  test "hides the writing entry index link on the index page" do
+    login_as(@user)
+
+    get writing_entries_url
+
+    assert_select "header a[href=?]", writing_entries_path, count: 0
+    assert_select "header a[href=?]", new_writing_entry_path, "筆記開示を始める"
+  end
+
+  test "hides the new entry link on the new entry page" do
+    login_as(@user)
+
+    get new_writing_entry_url
+
+    assert_select "header a[href=?]", new_writing_entry_path, count: 0
+    assert_select "header a[href=?]", writing_entries_path, "投稿一覧"
+  end
+
   test "shows the writing entry form to logged-in users" do
     login_as(@user)
 
@@ -51,14 +137,6 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_select "label", text: /ポジティブな感情/
     assert_select "label", text: /起きたことの中で、許せない相手や出来事/
     assert_select "label", text: /明日をどのような一日にしたい/
-  end
-
-  test "shows the new entry link in the logged-in header" do
-    login_as(@user)
-
-    get root_url
-
-    assert_select "header a[href=?]", new_writing_entry_path, "筆記開示を始める"
   end
 
   test "redirects guests who try to create an entry" do
@@ -178,5 +256,14 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
       unforgiven_target_detail: "まだ許せないこと",
       tomorrow_hope: "穏やかに過ごしたい"
     }
+  end
+
+  def create_writing_entry(user, attributes = {})
+    user.writing_entries.create!(
+      valid_writing_entry_params.merge(
+        status: :completed,
+        created_at: Time.current
+      ).merge(attributes)
+    )
   end
 end
