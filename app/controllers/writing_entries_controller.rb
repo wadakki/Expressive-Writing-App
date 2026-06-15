@@ -5,6 +5,10 @@ class WritingEntriesController < ApplicationController
     @writing_entries = current_user.writing_entries.completed.order(created_at: :desc)
   end
 
+  def show
+    @writing_entry = current_user.writing_entries.completed.find(params[:id])
+  end
+
   def new
     @writing_entry = current_user.writing_entries.build
   end

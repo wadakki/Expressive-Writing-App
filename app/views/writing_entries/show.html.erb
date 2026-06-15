@@ -1,0 +1,51 @@
+<% content_for :title, t(".title") %>
+
+<main class="min-h-[calc(100vh-10rem)] bg-gradient-to-b from-blue-50 to-white px-4 py-12 sm:px-6 sm:py-16">
+  <article class="mx-auto max-w-4xl rounded-2xl border border-blue-100 bg-white p-6 shadow-sm sm:p-10">
+    <div class="flex flex-col gap-5 border-b border-blue-100 pb-8 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="text-sm font-semibold tracking-wide text-blue-600"><%= t(".eyebrow") %></p>
+        <h1 class="mt-2 text-3xl font-bold tracking-tight text-blue-950"><%= t(".heading") %></h1>
+        <time datetime="<%= @writing_entry.created_at.iso8601 %>" class="mt-3 block text-sm text-slate-600">
+          <%= l(@writing_entry.created_at, format: :long) %>
+        </time>
+      </div>
+      <%= link_to t(".back"),
+                  writing_entries_path,
+                  class: "inline-flex shrink-0 justify-center rounded-lg border border-blue-600 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" %>
+    </div>
+
+    <section class="mt-8 rounded-xl bg-blue-50 p-5">
+      <h2 class="text-lg font-semibold text-blue-950"><%= t(".happiness_heading") %></h2>
+      <div class="mt-4 flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:gap-5">
+        <div class="rounded-lg bg-white px-4 py-3 text-slate-700">
+          <%= t(".before_happiness", score: @writing_entry.before_happiness_score) %>
+        </div>
+        <span class="hidden text-blue-600 sm:inline" aria-hidden="true">→</span>
+        <div class="rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white">
+          <%= t(".after_happiness", score: @writing_entry.after_happiness_score) %>
+        </div>
+      </div>
+    </section>
+
+    <div class="mt-10 space-y-8">
+      <% [
+        [:event_detail, "event"],
+        [:negative_emotion_detail, "negative_emotion"],
+        [:positive_emotion_detail, "positive_emotion"],
+        [:unforgiven_target_detail, "unforgiven_target"],
+        [:tomorrow_hope, "tomorrow_hope"]
+      ].each_with_index do |(attribute, question), index| %>
+        <section>
+          <h2 class="flex items-start text-base font-semibold leading-7 text-blue-950">
+            <span class="mr-3 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm text-white">
+              <%= index + 1 %>
+            </span>
+            <%= t(".questions.#{question}") %>
+          </h2>
+          <p class="mt-3 whitespace-pre-wrap break-words rounded-xl border border-blue-100 bg-blue-50/40 p-5 text-sm leading-7 text-slate-700"><%= @writing_entry.public_send(attribute) %></p>
+        </section>
+      <% end %>
+    </div>
+  </article>
+</main>
