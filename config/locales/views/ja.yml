@@ -72,6 +72,7 @@ ja:
       event_heading: 実際に起きたこと
       empty_heading: まだ投稿はありません
       empty_description: 今日の気持ちを書き出して、最初の記録を残してみましょう。
+      show: 詳細を見る
     new:
       title: 筆記開示
       eyebrow: EXPRESSIVE WRITING
@@ -98,6 +99,20 @@ ja:
     create:
       draft_success: 下書きを保存しました
       completed_success: 投稿を保存しました
+    show:
+      title: 投稿詳細
+      eyebrow: WRITING DETAIL
+      heading: 筆記開示の記録
+      back: 投稿一覧へ戻る
+      happiness_heading: 幸福度の変化
+      before_happiness: "書く前の幸福度: %{score}"
+      after_happiness: "書いた後の幸福度: %{score}"
+      questions:
+        event: 今日、実際に起きたこと
+        negative_emotion: ネガティブな感情を抱いた場面と感情
+        positive_emotion: ポジティブな感情を抱いた場面と感情
+        unforgiven_target: 許せない相手や出来事について感じたこと
+        tomorrow_hope: 明日をどのような一日にしたいか
   static_pages:
     home:
       title: 筆記開示アプリ

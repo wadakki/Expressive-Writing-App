@@ -63,6 +63,7 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_select "article##{dom_id(older_entry)}"
     assert_select "article##{dom_id(draft_entry)}", count: 0
     assert_select "article##{dom_id(other_entry)}", count: 0
+    assert_select "a[href=?]", writing_entry_path(newer_entry), "詳細を見る"
     assert_select "article" do |articles|
       assert_equal dom_id(newer_entry), articles.first["id"]
       assert_equal dom_id(older_entry), articles[1]["id"]
@@ -101,6 +102,78 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
 
     assert_select "header a[href=?]", new_writing_entry_path, count: 0
     assert_select "header a[href=?]", writing_entries_path, "投稿一覧"
+  end
+
+  test "redirects guests from a writing entry detail to login" do
+    writing_entry = create_writing_entry(@user)
+
+    get writing_entry_url(writing_entry)
+
+    assert_redirected_to login_url
+    assert_equal "ログインしてください", flash[:alert]
+  end
+
+  test "shows all answers and happiness scores for a completed entry" do
+    writing_entry = create_writing_entry(
+      @user,
+      before_happiness_score: 3,
+      after_happiness_score: 8,
+      event_detail: "詳細に表示する出来事",
+      negative_emotion_detail: "詳細に表示する不安",
+      positive_emotion_detail: "詳細に表示する喜び",
+      unforgiven_target_detail: "詳細に表示する許せないこと",
+      tomorrow_hope: "詳細に表示する明日の希望"
+    )
+    login_as(@user)
+
+    get writing_entry_url(writing_entry)
+
+    assert_response :success
+    assert_select "h1", "筆記開示の記録"
+    assert_select "time[datetime=?]", writing_entry.created_at.iso8601
+    assert_select "section", text: /書く前の幸福度: 3/
+    assert_select "section", text: /書いた後の幸福度: 8/
+    assert_select "h2", text: /今日、実際に起きたこと/
+    assert_select "p", "詳細に表示する出来事"
+    assert_select "p", "詳細に表示する不安"
+    assert_select "p", "詳細に表示する喜び"
+    assert_select "p", "詳細に表示する許せないこと"
+    assert_select "p", "詳細に表示する明日の希望"
+    assert_select "a[href=?]", writing_entries_path, "投稿一覧へ戻る"
+  end
+
+  test "does not show another user's entry" do
+    other_user = User.create!(
+      name: "詳細別ユーザー",
+      email: "show-other@example.com",
+      password: "password",
+      password_confirmation: "password"
+    )
+    writing_entry = create_writing_entry(other_user)
+    login_as(@user)
+
+    get writing_entry_url(writing_entry)
+
+    assert_response :not_found
+  end
+
+  test "does not show a draft entry" do
+    writing_entry = create_writing_entry(
+      @user,
+      event_detail: nil,
+      negative_emotion_detail: nil,
+      positive_emotion_detail: nil,
+      unforgiven_target_detail: nil,
+      tomorrow_hope: nil,
+      before_happiness_score: nil,
+      after_happiness_score: nil,
+      status: :draft
+    )
+    login_as(@user)
+
+    get writing_entry_url(writing_entry)
+
+    assert_response :not_found
   end
 
   test "shows the writing entry form to logged-in users" do
