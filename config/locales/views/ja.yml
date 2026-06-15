@@ -13,6 +13,7 @@ ja:
       logout: ログアウト
       logged_in_as: "%{name}さん"
       new_writing_entry: 筆記開示を始める
+      writing_entries: 投稿一覧
     before_login_header:
       logo_alt: 筆記開示アプリ
       app_name: 筆記開示アプリ
@@ -60,6 +61,17 @@ ja:
     destroy:
       success: ログアウトしました
   writing_entries:
+    index:
+      title: 投稿一覧
+      eyebrow: WRITING HISTORY
+      heading: これまでの筆記開示
+      description: 投稿した記録を新しい順に振り返ることができます。
+      new_writing_entry: 新しく書く
+      before_happiness: "書く前: %{score}"
+      after_happiness: "書いた後: %{score}"
+      event_heading: 実際に起きたこと
+      empty_heading: まだ投稿はありません
+      empty_description: 今日の気持ちを書き出して、最初の記録を残してみましょう。
     new:
       title: 筆記開示
       eyebrow: EXPRESSIVE WRITING

@@ -1,6 +1,10 @@
 class WritingEntriesController < ApplicationController
   before_action :require_login
 
+  def index
+    @writing_entries = current_user.writing_entries.completed.order(created_at: :desc)
+  end
+
   def new
     @writing_entry = current_user.writing_entries.build
   end
