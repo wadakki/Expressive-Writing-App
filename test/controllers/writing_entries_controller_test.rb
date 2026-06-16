@@ -52,6 +52,12 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
       event_detail: "表示されない他ユーザー投稿",
       created_at: Time.current
     )
+    other_draft_entry = create_writing_entry(
+      other_user,
+      event_detail: "表示されない他ユーザー下書き",
+      status: :draft,
+      created_at: 3.days.ago
+    )
     login_as(@user)
 
     get writing_entries_url
@@ -63,6 +69,7 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_select "article##{dom_id(newer_entry)}"
     assert_select "article##{dom_id(older_entry)}"
     assert_select "article##{dom_id(other_entry)}", count: 0
+    assert_select "article##{dom_id(other_draft_entry)}", count: 0
     assert_select "span", "下書き"
     assert_select "span", "投稿済み"
     assert_select "a[href=?]", writing_entry_path(newer_entry), "詳細を見る"
@@ -202,6 +209,20 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?][data-turbo-method=delete]", writing_entry_path(writing_entry), "削除する"
   end
 
+  test "redirects guests who try to update an entry" do
+    writing_entry = create_writing_entry(@user)
+
+    patch writing_entry_url(writing_entry), params: {
+      writing_entry: valid_writing_entry_params.merge(
+        event_detail: "未ログイン更新"
+      )
+    }
+
+    assert_redirected_to login_url
+    assert_equal "ログインしてください", flash[:alert]
+    assert_not_equal "未ログイン更新", writing_entry.reload.event_detail
+  end
+
   test "updates the current user's completed entry" do
     writing_entry = create_writing_entry(@user)
     other_user = User.create!(
@@ -300,6 +321,40 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     }
     assert_response :not_found
     assert_not_equal "不正な更新", writing_entry.reload.event_detail
+  end
+
+  test "does not edit update or delete another user's draft entry" do
+    other_user = User.create!(
+      name: "下書き別ユーザー",
+      email: "draft-auth-other@example.com",
+      password: "password",
+      password_confirmation: "password"
+    )
+    writing_entry = create_writing_entry(
+      other_user,
+      event_detail: "他ユーザー下書き",
+      status: :draft
+    )
+    login_as(@user)
+
+    get edit_writing_entry_url(writing_entry)
+    assert_response :not_found
+
+    assert_no_changes -> { writing_entry.reload.event_detail } do
+      patch writing_entry_url(writing_entry), params: {
+        writing_entry: {
+          event_detail: "不正な下書き更新",
+          status: "draft"
+        }
+      }
+    end
+    assert_response :not_found
+
+    assert_no_difference("WritingEntry.count") do
+      delete writing_entry_url(writing_entry)
+    end
+    assert_response :not_found
+    assert WritingEntry.exists?(writing_entry.id)
   end
 
   test "redirects guests who try to delete an entry" do
