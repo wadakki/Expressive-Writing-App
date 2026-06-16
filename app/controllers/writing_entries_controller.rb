@@ -4,7 +4,7 @@ class WritingEntriesController < ApplicationController
   before_action :set_writing_entry, only: %i[edit update destroy]
 
   def index
-    @writing_entries = current_user.writing_entries.order(created_at: :desc)
+    @writing_entries = current_user_writing_entries.order(created_at: :desc)
   end
 
   def show; end
@@ -16,7 +16,7 @@ class WritingEntriesController < ApplicationController
   def edit; end
 
   def create
-    @writing_entry = current_user.writing_entries.build(writing_entry_params)
+    @writing_entry = current_user_writing_entries.build(writing_entry_params)
 
     if @writing_entry.save
       redirect_to root_path, notice: t(".#{@writing_entry.status}_success")
@@ -40,12 +40,16 @@ class WritingEntriesController < ApplicationController
 
   private
 
+  def current_user_writing_entries
+    current_user.writing_entries
+  end
+
   def set_completed_writing_entry
-    @writing_entry = current_user.writing_entries.completed.find(params[:id])
+    @writing_entry = current_user_writing_entries.completed.find(params[:id])
   end
 
   def set_writing_entry
-    @writing_entry = current_user.writing_entries.find(params[:id])
+    @writing_entry = current_user_writing_entries.find(params[:id])
   end
 
   def writing_entry_params
