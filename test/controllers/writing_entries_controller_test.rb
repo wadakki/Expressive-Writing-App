@@ -67,6 +67,7 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_select "span", "投稿済み"
     assert_select "a[href=?]", writing_entry_path(newer_entry), "詳細を見る"
     assert_select "a[href=?]", edit_writing_entry_path(draft_entry), "編集を再開する"
+    assert_select "a[href=?][data-turbo-method=delete]", writing_entry_path(draft_entry), "削除する"
     assert_select "article" do |articles|
       assert_equal dom_id(draft_entry), articles.first["id"]
       assert_equal dom_id(newer_entry), articles[1]["id"]
@@ -145,6 +146,7 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_select "p", "詳細に表示する明日の希望"
     assert_select "a[href=?]", writing_entries_path, "投稿一覧へ戻る"
     assert_select "a[href=?]", edit_writing_entry_path(writing_entry), "編集する"
+    assert_select "a[href=?][data-turbo-method=delete]", writing_entry_path(writing_entry), "削除する"
   end
 
   test "redirects guests from the edit page to login" do
@@ -197,6 +199,7 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_select "button[name=?][value=draft][formnovalidate]", "writing_entry[status]", "下書き保存"
     assert_select "button[name=?][value=completed]", "writing_entry[status]", "更新する"
     assert_select "a[href=?]", writing_entries_path, "編集をキャンセル"
+    assert_select "a[href=?][data-turbo-method=delete]", writing_entry_path(writing_entry), "削除する"
   end
 
   test "updates the current user's completed entry" do
@@ -297,6 +300,70 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     }
     assert_response :not_found
     assert_not_equal "不正な更新", writing_entry.reload.event_detail
+  end
+
+  test "redirects guests who try to delete an entry" do
+    writing_entry = create_writing_entry(@user)
+
+    assert_no_difference("WritingEntry.count") do
+      delete writing_entry_url(writing_entry)
+    end
+
+    assert_redirected_to login_url
+  end
+
+  test "deletes the current user's completed entry" do
+    writing_entry = create_writing_entry(@user)
+    login_as(@user)
+
+    assert_difference("WritingEntry.count", -1) do
+      delete writing_entry_url(writing_entry)
+    end
+
+    assert_redirected_to writing_entries_url, status: :see_other
+    assert_equal "投稿を削除しました", flash[:notice]
+    assert_not WritingEntry.exists?(writing_entry.id)
+  end
+
+  test "deletes the current user's draft entry" do
+    writing_entry = create_writing_entry(
+      @user,
+      event_detail: nil,
+      negative_emotion_detail: nil,
+      positive_emotion_detail: nil,
+      unforgiven_target_detail: nil,
+      tomorrow_hope: nil,
+      before_happiness_score: nil,
+      after_happiness_score: nil,
+      status: :draft
+    )
+    login_as(@user)
+
+    assert_difference("WritingEntry.count", -1) do
+      delete writing_entry_url(writing_entry)
+    end
+
+    assert_redirected_to writing_entries_url, status: :see_other
+    assert_equal "投稿を削除しました", flash[:notice]
+    assert_not WritingEntry.exists?(writing_entry.id)
+  end
+
+  test "does not delete another user's entry" do
+    other_user = User.create!(
+      name: "削除別ユーザー",
+      email: "delete-other@example.com",
+      password: "password",
+      password_confirmation: "password"
+    )
+    writing_entry = create_writing_entry(other_user)
+    login_as(@user)
+
+    assert_no_difference("WritingEntry.count") do
+      delete writing_entry_url(writing_entry)
+    end
+
+    assert_response :not_found
+    assert WritingEntry.exists?(writing_entry.id)
   end
 
   test "does not show another user's entry" do

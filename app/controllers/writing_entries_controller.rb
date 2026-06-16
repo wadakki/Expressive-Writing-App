@@ -1,7 +1,7 @@
 class WritingEntriesController < ApplicationController
   before_action :require_login
   before_action :set_completed_writing_entry, only: :show
-  before_action :set_writing_entry, only: %i[edit update]
+  before_action :set_writing_entry, only: %i[edit update destroy]
 
   def index
     @writing_entries = current_user.writing_entries.order(created_at: :desc)
@@ -31,6 +31,11 @@ class WritingEntriesController < ApplicationController
     else
       render :edit, status: :unprocessable_entity
     end
+  end
+
+  def destroy
+    @writing_entry.destroy!
+    redirect_to writing_entries_path, notice: t(".success"), status: :see_other
   end
 
   private
