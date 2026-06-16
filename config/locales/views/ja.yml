@@ -115,6 +115,10 @@ ja:
       completed_success: 投稿を保存しました
     update:
       success: 投稿を更新しました
+    destroy:
+      link: 削除する
+      confirm: この投稿を削除しますか？
+      success: 投稿を削除しました
     show:
       title: 投稿詳細
       eyebrow: WRITING DETAIL

@@ -15,5 +15,11 @@
                show_draft_button: @writing_entry.draft? %>
 
     <%= link_to t(".cancel"), @writing_entry.completed? ? @writing_entry : writing_entries_path, class: "mt-6 block text-center text-sm font-semibold text-blue-700 hover:text-blue-900" %>
+    <% if @writing_entry.draft? %>
+      <%= link_to t("writing_entries.destroy.link"),
+                  @writing_entry,
+                  data: { turbo_method: :delete, turbo_confirm: t("writing_entries.destroy.confirm") },
+                  class: "mt-4 block rounded-lg bg-red-600 px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" %>
+    <% end %>
   </div>
 </main>

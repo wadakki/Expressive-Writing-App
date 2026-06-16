@@ -48,7 +48,7 @@
                 <% end %>
               </p>
             </div>
-            <div class="mt-5 text-right">
+            <div class="mt-5 flex flex-col gap-3 text-right sm:flex-row sm:justify-end">
               <% if writing_entry.completed? %>
                 <%= link_to t(".show"),
                             writing_entry_path(writing_entry),
@@ -58,6 +58,10 @@
                             edit_writing_entry_path(writing_entry),
                             class: "inline-flex items-center text-sm font-semibold text-blue-700 transition hover:text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" %>
               <% end %>
+              <%= link_to t("writing_entries.destroy.link"),
+                          writing_entry,
+                          data: { turbo_method: :delete, turbo_confirm: t("writing_entries.destroy.confirm") },
+                          class: "inline-flex items-center text-sm font-semibold text-red-700 transition hover:text-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" %>
             </div>
           </article>
         <% end %>
