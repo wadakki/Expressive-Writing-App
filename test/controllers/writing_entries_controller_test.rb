@@ -24,7 +24,7 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "ログインしてください", flash[:alert]
   end
 
-  test "shows only the current user's completed entries newest first" do
+  test "shows the current user's entries newest first with status labels" do
     other_user = User.create!(
       name: "別ユーザー",
       email: "index-other@example.com",
@@ -43,7 +43,7 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     )
     draft_entry = create_writing_entry(
       @user,
-      event_detail: "表示されない下書き",
+      event_detail: "表示される下書き",
       status: :draft,
       created_at: Time.current
     )
@@ -58,15 +58,19 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", "これまでの筆記開示"
-    assert_select "article", count: 2
+    assert_select "article", count: 3
+    assert_select "article##{dom_id(draft_entry)}"
     assert_select "article##{dom_id(newer_entry)}"
     assert_select "article##{dom_id(older_entry)}"
-    assert_select "article##{dom_id(draft_entry)}", count: 0
     assert_select "article##{dom_id(other_entry)}", count: 0
+    assert_select "span", "下書き"
+    assert_select "span", "投稿済み"
     assert_select "a[href=?]", writing_entry_path(newer_entry), "詳細を見る"
+    assert_select "a[href=?]", edit_writing_entry_path(draft_entry), "編集を再開する"
     assert_select "article" do |articles|
-      assert_equal dom_id(newer_entry), articles.first["id"]
-      assert_equal dom_id(older_entry), articles[1]["id"]
+      assert_equal dom_id(draft_entry), articles.first["id"]
+      assert_equal dom_id(newer_entry), articles[1]["id"]
+      assert_equal dom_id(older_entry), articles[2]["id"]
     end
   end
 
@@ -81,8 +85,8 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     get writing_entries_url
 
     assert_response :success
-    assert_select "article", count: 0
-    assert_select "h2", "まだ投稿はありません"
+    assert_select "article", count: 1
+    assert_select "a[href=?]", edit_writing_entry_path(WritingEntry.last), "編集を再開する"
     assert_select "a[href=?]", new_writing_entry_path, "新しく書く"
   end
 
@@ -172,6 +176,29 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_select "button[value=draft]", count: 0
   end
 
+  test "shows the edit form for a draft entry" do
+    writing_entry = create_writing_entry(
+      @user,
+      event_detail: nil,
+      negative_emotion_detail: nil,
+      positive_emotion_detail: nil,
+      unforgiven_target_detail: nil,
+      tomorrow_hope: nil,
+      before_happiness_score: nil,
+      after_happiness_score: nil,
+      status: :draft
+    )
+    login_as(@user)
+
+    get edit_writing_entry_url(writing_entry)
+
+    assert_response :success
+    assert_select "h1", "筆記開示を編集する"
+    assert_select "button[name=?][value=draft][formnovalidate]", "writing_entry[status]", "下書き保存"
+    assert_select "button[name=?][value=completed]", "writing_entry[status]", "更新する"
+    assert_select "a[href=?]", writing_entries_path, "編集をキャンセル"
+  end
+
   test "updates the current user's completed entry" do
     writing_entry = create_writing_entry(@user)
     other_user = User.create!(
@@ -218,6 +245,38 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_select "[role=alert]", text: /実際に起きたことを入力してください/
     assert_select "textarea[name=?]", "writing_entry[event_detail]", text: ""
     assert_equal "今日あったこと", writing_entry.reload.event_detail
+  end
+
+  test "updates a draft entry as a draft" do
+    writing_entry = create_writing_entry(@user, event_detail: nil, status: :draft)
+    login_as(@user)
+
+    patch writing_entry_url(writing_entry), params: {
+      writing_entry: {
+        event_detail: "下書き更新",
+        status: "draft"
+      }
+    }
+
+    assert_redirected_to writing_entries_url
+    assert_equal "投稿を更新しました", flash[:notice]
+    writing_entry.reload
+    assert_predicate writing_entry, :draft?
+    assert_equal "下書き更新", writing_entry.event_detail
+  end
+
+  test "updates a draft entry as completed" do
+    writing_entry = create_writing_entry(@user, event_detail: nil, status: :draft)
+    login_as(@user)
+
+    patch writing_entry_url(writing_entry), params: {
+      writing_entry: valid_writing_entry_params.merge(status: "completed")
+    }
+
+    assert_redirected_to writing_entry_url(writing_entry)
+    writing_entry.reload
+    assert_predicate writing_entry, :completed?
+    assert_equal "今日あったこと", writing_entry.event_detail
   end
 
   test "does not edit or update another user's entry" do
