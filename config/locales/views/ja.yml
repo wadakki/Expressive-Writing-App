@@ -65,7 +65,7 @@ ja:
       title: 投稿一覧
       eyebrow: WRITING HISTORY
       heading: これまでの筆記開示
-      description: 投稿した記録を新しい順に振り返ることができます。
+      description: 投稿した記録と保存した下書きを新しい順に振り返ることができます。
       new_writing_entry: 新しく書く
       before_happiness: "書く前: %{score}"
       after_happiness: "書いた後: %{score}"
@@ -73,6 +73,11 @@ ja:
       empty_heading: まだ投稿はありません
       empty_description: 今日の気持ちを書き出して、最初の記録を残してみましょう。
       show: 詳細を見る
+      resume_edit: 編集を再開する
+      blank_draft: まだ内容が入力されていません
+      statuses:
+        completed: 投稿済み
+        draft: 下書き
     form:
       before_happiness:
         heading: 書き始める前の気持ち

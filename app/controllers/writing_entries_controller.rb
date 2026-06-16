@@ -1,9 +1,10 @@
 class WritingEntriesController < ApplicationController
   before_action :require_login
-  before_action :set_writing_entry, only: %i[show edit update]
+  before_action :set_completed_writing_entry, only: :show
+  before_action :set_writing_entry, only: %i[edit update]
 
   def index
-    @writing_entries = current_user.writing_entries.completed.order(created_at: :desc)
+    @writing_entries = current_user.writing_entries.order(created_at: :desc)
   end
 
   def show; end
@@ -25,8 +26,8 @@ class WritingEntriesController < ApplicationController
   end
 
   def update
-    if @writing_entry.update(writing_entry_params.except(:status))
-      redirect_to @writing_entry, notice: t(".success")
+    if @writing_entry.update(update_writing_entry_params)
+      redirect_to after_update_path, notice: t(".success")
     else
       render :edit, status: :unprocessable_entity
     end
@@ -34,8 +35,12 @@ class WritingEntriesController < ApplicationController
 
   private
 
-  def set_writing_entry
+  def set_completed_writing_entry
     @writing_entry = current_user.writing_entries.completed.find(params[:id])
+  end
+
+  def set_writing_entry
+    @writing_entry = current_user.writing_entries.find(params[:id])
   end
 
   def writing_entry_params
@@ -49,5 +54,21 @@ class WritingEntriesController < ApplicationController
       :tomorrow_hope,
       :status
     )
+  end
+
+  def update_writing_entry_params
+    if @writing_entry.draft?
+      writing_entry_params
+    else
+      writing_entry_params.except(:status)
+    end
+  end
+
+  def after_update_path
+    if @writing_entry.completed?
+      @writing_entry
+    else
+      writing_entries_path
+    end
   end
 end

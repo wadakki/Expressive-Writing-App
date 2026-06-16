@@ -23,24 +23,41 @@
               <time datetime="<%= writing_entry.created_at.iso8601 %>" class="text-sm font-semibold text-blue-700">
                 <%= l(writing_entry.created_at, format: :long) %>
               </time>
-              <div class="flex items-center gap-2 text-sm text-slate-600">
-                <span><%= t(".before_happiness", score: writing_entry.before_happiness_score) %></span>
-                <span aria-hidden="true">→</span>
-                <span class="font-semibold text-blue-800">
-                  <%= t(".after_happiness", score: writing_entry.after_happiness_score) %>
+              <div class="flex flex-wrap items-center gap-3">
+                <span class="rounded-full px-3 py-1 text-xs font-semibold <%= writing_entry.completed? ? "bg-blue-100 text-blue-800" : "bg-amber-100 text-amber-800" %>">
+                  <%= t(".statuses.#{writing_entry.status}") %>
                 </span>
+                <% if writing_entry.completed? %>
+                  <div class="flex items-center gap-2 text-sm text-slate-600">
+                    <span><%= t(".before_happiness", score: writing_entry.before_happiness_score) %></span>
+                    <span aria-hidden="true">→</span>
+                    <span class="font-semibold text-blue-800">
+                      <%= t(".after_happiness", score: writing_entry.after_happiness_score) %>
+                    </span>
+                  </div>
+                <% end %>
               </div>
             </div>
             <div class="mt-5 border-t border-blue-100 pt-5">
               <h2 class="text-sm font-semibold text-blue-950"><%= t(".event_heading") %></h2>
               <p class="mt-2 whitespace-pre-wrap break-words text-sm leading-7 text-slate-700">
-                <%= writing_entry.event_detail %>
+                <% if writing_entry.event_detail.present? %>
+                  <%= writing_entry.event_detail %>
+                <% else %>
+                  <span class="text-slate-500"><%= t(".blank_draft") %></span>
+                <% end %>
               </p>
             </div>
             <div class="mt-5 text-right">
-              <%= link_to t(".show"),
-                          writing_entry_path(writing_entry),
-                          class: "inline-flex items-center text-sm font-semibold text-blue-700 transition hover:text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" %>
+              <% if writing_entry.completed? %>
+                <%= link_to t(".show"),
+                            writing_entry_path(writing_entry),
+                            class: "inline-flex items-center text-sm font-semibold text-blue-700 transition hover:text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" %>
+              <% else %>
+                <%= link_to t(".resume_edit"),
+                            edit_writing_entry_path(writing_entry),
+                            class: "inline-flex items-center text-sm font-semibold text-blue-700 transition hover:text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" %>
+              <% end %>
             </div>
           </article>
         <% end %>
