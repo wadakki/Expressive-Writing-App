@@ -140,6 +140,104 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_select "p", "詳細に表示する許せないこと"
     assert_select "p", "詳細に表示する明日の希望"
     assert_select "a[href=?]", writing_entries_path, "投稿一覧へ戻る"
+    assert_select "a[href=?]", edit_writing_entry_path(writing_entry), "編集する"
+  end
+
+  test "redirects guests from the edit page to login" do
+    writing_entry = create_writing_entry(@user)
+
+    get edit_writing_entry_url(writing_entry)
+
+    assert_redirected_to login_url
+  end
+
+  test "shows the edit form with the existing values" do
+    writing_entry = create_writing_entry(
+      @user,
+      before_happiness_score: 2,
+      after_happiness_score: 9,
+      event_detail: "編集前の出来事"
+    )
+    login_as(@user)
+
+    get edit_writing_entry_url(writing_entry)
+
+    assert_response :success
+    assert_select "h1", "筆記開示を編集する"
+    assert_select "form[action=?][method=post]", writing_entry_path(writing_entry)
+    assert_select "input[name=?][value=2]", "writing_entry[before_happiness_score]"
+    assert_select "input[name=?][value=9]", "writing_entry[after_happiness_score]"
+    assert_select "textarea[name=?]", "writing_entry[event_detail]", text: "編集前の出来事"
+    assert_select "button[name=?][value=completed]", "writing_entry[status]", "更新する"
+    assert_select "button[value=draft]", count: 0
+  end
+
+  test "updates the current user's completed entry" do
+    writing_entry = create_writing_entry(@user)
+    other_user = User.create!(
+      name: "更新別ユーザー",
+      email: "update-other@example.com",
+      password: "password",
+      password_confirmation: "password"
+    )
+    login_as(@user)
+
+    patch writing_entry_url(writing_entry), params: {
+      writing_entry: valid_writing_entry_params.merge(
+        event_detail: "更新後の出来事",
+        before_happiness_score: 4,
+        after_happiness_score: 9,
+        status: "draft",
+        user_id: other_user.id
+      )
+    }
+
+    assert_redirected_to writing_entry_url(writing_entry)
+    assert_equal "投稿を更新しました", flash[:notice]
+    writing_entry.reload
+    assert_equal @user, writing_entry.user
+    assert_equal "更新後の出来事", writing_entry.event_detail
+    assert_equal 4, writing_entry.before_happiness_score
+    assert_equal 9, writing_entry.after_happiness_score
+    assert_predicate writing_entry, :completed?
+  end
+
+  test "renders the edit form with errors when the update is invalid" do
+    writing_entry = create_writing_entry(@user)
+    login_as(@user)
+
+    patch writing_entry_url(writing_entry), params: {
+      writing_entry: valid_writing_entry_params.merge(
+        event_detail: "",
+        status: "completed"
+      )
+    }
+
+    assert_response :unprocessable_entity
+    assert_select "h1", "筆記開示を編集する"
+    assert_select "[role=alert]", text: /実際に起きたことを入力してください/
+    assert_select "textarea[name=?]", "writing_entry[event_detail]", text: ""
+    assert_equal "今日あったこと", writing_entry.reload.event_detail
+  end
+
+  test "does not edit or update another user's entry" do
+    other_user = User.create!(
+      name: "編集別ユーザー",
+      email: "edit-other@example.com",
+      password: "password",
+      password_confirmation: "password"
+    )
+    writing_entry = create_writing_entry(other_user)
+    login_as(@user)
+
+    get edit_writing_entry_url(writing_entry)
+    assert_response :not_found
+
+    patch writing_entry_url(writing_entry), params: {
+      writing_entry: valid_writing_entry_params.merge(event_detail: "不正な更新")
+    }
+    assert_response :not_found
+    assert_not_equal "不正な更新", writing_entry.reload.event_detail
   end
 
   test "does not show another user's entry" do

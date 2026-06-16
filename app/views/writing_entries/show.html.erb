@@ -10,9 +10,14 @@
           <%= l(@writing_entry.created_at, format: :long) %>
         </time>
       </div>
-      <%= link_to t(".back"),
-                  writing_entries_path,
-                  class: "inline-flex shrink-0 justify-center rounded-lg border border-blue-600 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" %>
+      <div class="flex shrink-0 flex-col gap-3 sm:flex-row">
+        <%= link_to t(".edit"),
+                    edit_writing_entry_path(@writing_entry),
+                    class: "inline-flex justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" %>
+        <%= link_to t(".back"),
+                    writing_entries_path,
+                    class: "inline-flex justify-center rounded-lg border border-blue-600 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" %>
+      </div>
     </div>
 
     <section class="mt-8 rounded-xl bg-blue-50 p-5">
