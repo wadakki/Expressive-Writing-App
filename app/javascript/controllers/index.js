@@ -6,3 +6,5 @@ import { application } from "./application"
 
 import HelloController from "./hello_controller"
 application.register("hello", HelloController)
+import WritingTimerController from "./writing_timer_controller"
+application.register("writing-timer", WritingTimerController)

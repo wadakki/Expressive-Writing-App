@@ -183,6 +183,7 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_select "textarea[name=?]", "writing_entry[event_detail]", text: "編集前の出来事"
     assert_select "button[name=?][value=completed]", "writing_entry[status]", "更新する"
     assert_select "button[value=draft]", count: 0
+    assert_select "[data-controller='writing-timer']", count: 0
   end
 
   test "shows the edit form for a draft entry" do
@@ -207,6 +208,9 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_select "button[name=?][value=completed]", "writing_entry[status]", "更新する"
     assert_select "a[href=?]", writing_entries_path, "編集をキャンセル"
     assert_select "a[href=?][data-turbo-method=delete]", writing_entry_path(writing_entry), "削除する"
+    assert_select "[data-controller='writing-timer'][data-writing-timer-duration-value='480']"
+    assert_select "[data-writing-timer-target=display]", "8:00"
+    assert_select "h2", "8分タイマー"
   end
 
   test "redirects guests who try to update an entry" do
@@ -469,6 +473,10 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
                   "writing_entry[before_happiness_score]"
     assert_select "input[name=?][min=1][max=10][step=1][required]",
                   "writing_entry[after_happiness_score]"
+
+    assert_select "[data-controller='writing-timer'][data-writing-timer-duration-value='480']"
+    assert_select "[data-writing-timer-target=display]", "8:00"
+    assert_select "h2", "8分タイマー"
 
     WritingEntry::DETAIL_ATTRIBUTES.each do |attribute|
       assert_select "textarea[name=?][maxlength=3000][required]",

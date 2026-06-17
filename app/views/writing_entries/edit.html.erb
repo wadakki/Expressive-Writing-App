@@ -12,7 +12,8 @@
                writing_entry: @writing_entry,
                error_heading: t(".error_heading"),
                submit_label: t(".submit"),
-               show_draft_button: @writing_entry.draft? %>
+               show_draft_button: @writing_entry.draft?,
+               show_timer: @writing_entry.draft? %>
 
     <%= link_to t(".cancel"), @writing_entry.completed? ? @writing_entry : writing_entries_path, class: "mt-6 block text-center text-sm font-semibold text-blue-700 hover:text-blue-900" %>
     <% if @writing_entry.draft? %>
