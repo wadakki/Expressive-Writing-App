@@ -201,4 +201,17 @@ ja:
       title: プロフィール
       heading: プロフィール
       name: 名前
+      name_label: 名前
+      name_hint: 50文字以内で入力してください。
       email: メールアドレス
+      email_label: メールアドレス
+      password_label: パスワード
+      password_display_hint: セキュリティのため、現在のパスワードは表示されません。
+      password_change_heading: パスワード変更
+      password_change_hint: 変更しない場合は空欄のまま更新してください。
+      new_password_label: 新しいパスワード
+      password_confirmation_label: 新しいパスワード（確認）
+      submit: 更新する
+      error_heading: 入力内容を確認してください
+    update:
+      success: プロフィールを更新しました
