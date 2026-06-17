@@ -39,6 +39,7 @@ class UserSessionsControllerTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_select "h1", "これまでの筆記開示"
     assert_select "a[href=?]", logout_path, "ログアウト"
+    assert_select "a[href=?]", profile_path, "プロフィール"
     assert_select "header", text: /ログインユーザーさん/
     assert_select "header a[href=?]", login_path, count: 0
     assert_select "header a[href=?]", new_user_path, count: 0

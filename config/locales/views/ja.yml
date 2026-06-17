@@ -11,9 +11,11 @@ ja:
       signup: ユーザー登録
       login: ログイン
       logout: ログアウト
+      profile: プロフィール
       logged_in_as: "%{name}さん"
       new_writing_entry: 筆記開示を始める
       writing_entries: 投稿一覧
+      user_menu: ユーザーメニュー
     before_login_header:
       logo_alt: 筆記開示アプリ
       app_name: 筆記開示アプリ
@@ -194,3 +196,9 @@ ja:
           title: 対応について
           body: 内容を確認のうえ、必要に応じて運営者からご案内します。回答にはお時間をいただく場合があります。
           details: お問い合わせ窓口の詳細は、サービス公開時に本ページでご案内します。
+  profiles:
+    show:
+      title: プロフィール
+      heading: プロフィール
+      name: 名前
+      email: メールアドレス
