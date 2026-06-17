@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   resources :users, only: %i[new create]
+  resource :profile, only: :show
   resources :writing_entries, only: %i[index show new create edit update destroy]
   get "login", to: "user_sessions#new"
   post "login", to: "user_sessions#create"

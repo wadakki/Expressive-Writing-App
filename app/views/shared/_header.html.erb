@@ -23,13 +23,26 @@
                     new_writing_entry_path,
                     class: "rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" %>
       <% end %>
-      <span class="hidden text-sm text-slate-600 sm:inline">
-        <%= t(".logged_in_as", name: current_user.name) %>
-      </span>
-      <%= link_to t(".logout"),
-                  logout_path,
-                  data: { turbo_method: :delete },
-                  class: "rounded-lg border border-blue-600 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" %>
+      <div class="group relative">
+        <button type="button"
+                class="flex items-center gap-2 rounded-full border border-blue-200 bg-white py-1 pl-1 pr-3 text-sm font-semibold text-blue-900 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                aria-haspopup="true"
+                aria-label="<%= t(".user_menu") %>">
+          <span class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white" aria-hidden="true">
+            <%= current_user.name.to_s.first.upcase %>
+          </span>
+          <span class="hidden sm:inline"><%= t(".logged_in_as", name: current_user.name) %></span>
+        </button>
+        <div class="absolute right-0 z-10 mt-2 hidden w-44 rounded-xl border border-blue-100 bg-white py-2 shadow-lg group-focus-within:block group-hover:block">
+          <%= link_to t(".profile"),
+                      profile_path,
+                      class: "block px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-blue-50 hover:text-blue-800" %>
+          <%= link_to t(".logout"),
+                      logout_path,
+                      data: { turbo_method: :delete },
+                      class: "block px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-blue-50 hover:text-blue-800" %>
+        </div>
+      </div>
     </nav>
   </div>
 </header>
