@@ -85,6 +85,10 @@ ja:
         heading: 書き始める前の気持ち
         description: 現在の幸福度を1から10で選んでください。1が低く、10が高い状態です。
         label: 書く前の幸福度
+      timer:
+        heading: 8分タイマー
+        description: 8分間を目安に、思いついたことをそのまま書き出してみましょう。
+        remaining: 残り時間
       questions:
         event: 今日、実際に起きたことを思いつく限り書いてください。
         negative_emotion: 起きたことの中で、ネガティブな感情を抱いた場面と感情を書いてください。
