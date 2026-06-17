@@ -1,4 +1,10 @@
-<%= form_with model: writing_entry, class: "space-y-8" do |form| %>
+<% timer_enabled = local_assigns.fetch(:show_timer, false) %>
+
+<%= form_with model: writing_entry,
+              class: "space-y-8",
+              data: (timer_enabled ? { controller: "writing-timer",
+                                       writing_timer_duration_value: 480,
+                                       writing_timer_alert_message_value: t("writing_entries.form.timer.alert") } : {}) do |form| %>
   <% if writing_entry.errors.any? %>
     <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800" role="alert">
       <h2 class="font-semibold"><%= error_heading %></h2>
@@ -10,10 +16,9 @@
     </div>
   <% end %>
 
-  <% if local_assigns.fetch(:show_timer, false) %>
+  <% if timer_enabled %>
     <section class="sticky top-4 z-20 rounded-xl border border-blue-200 bg-blue-50/95 p-5 shadow-lg shadow-blue-100 backdrop-blur"
-             data-controller="writing-timer"
-             data-writing-timer-duration-value="480">
+             data-writing-timer-target="container">
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 class="text-lg font-semibold text-blue-950"><%= t("writing_entries.form.timer.heading") %></h2>
@@ -31,6 +36,9 @@
              data-writing-timer-target="progress"
              style="width: 100%"></div>
       </div>
+      <p class="mt-4 hidden rounded-lg border border-amber-200 bg-white px-4 py-3 text-sm font-semibold text-amber-800"
+         data-writing-timer-target="timeoutMessage"
+         role="status"><%= t("writing_entries.form.timer.finished") %></p>
     </section>
   <% end %>
 
