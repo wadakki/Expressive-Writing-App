@@ -71,6 +71,17 @@ class UserTest < ActiveSupport::TestCase
     assert_nil User.authenticate(user.email, "wrong-password")
   end
 
+  test "has one notification setting" do
+    user = build_user(email: "notification-owner@example.com")
+    user.save!
+    notification_setting = user.create_notification_setting!(
+      notification_enabled: true,
+      notification_time: "21:00"
+    )
+
+    assert_equal notification_setting, user.notification_setting
+  end
+
   private
 
   def build_user(name: "Test User", email: "user@example.com", password: "password",

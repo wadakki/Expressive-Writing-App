@@ -10,9 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_17_032000) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_18_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "notification_settings", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.boolean "notification_enabled", default: false, null: false
+    t.time "notification_time", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_notification_settings_on_user_id", unique: true
+  end
 
   create_table "users", force: :cascade do |t|
     t.string "name", limit: 50, null: false
@@ -44,5 +53,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_17_032000) do
     t.check_constraint "timer_remaining_seconds >= 0 AND timer_remaining_seconds <= 480", name: "writing_entries_timer_remaining_seconds_range"
   end
 
+  add_foreign_key "notification_settings", "users"
   add_foreign_key "writing_entries", "users"
 end
