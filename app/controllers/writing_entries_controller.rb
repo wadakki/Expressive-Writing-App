@@ -61,6 +61,7 @@ class WritingEntriesController < ApplicationController
       :positive_emotion_detail,
       :unforgiven_target_detail,
       :tomorrow_hope,
+      :timer_remaining_seconds,
       :status
     )
   end

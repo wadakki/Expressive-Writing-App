@@ -1,16 +1,25 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["container", "display", "progress", "timeoutMessage"]
+  static targets = ["completedButton", "container", "display", "progress", "remainingField", "timeoutMessage"]
   static values = {
     alertMessage: String,
-    duration: { type: Number, default: 480 }
+    duration: { type: Number, default: 480 },
+    initialRemaining: { type: Number, default: 480 }
   }
 
   connect() {
-    this.remainingSeconds = this.durationValue
+    this.remainingSeconds = this.normalizedInitialRemainingSeconds()
     this.hasFinished = false
     this.render()
+
+    if (this.remainingSeconds <= 0) {
+      this.finish({ showAlert: false })
+      return
+    }
+
+    this.disableCompletedButton()
+
     this.interval = window.setInterval(() => {
       this.tick()
     }, 1000)
@@ -39,6 +48,7 @@ export default class extends Controller {
     const seconds = this.remainingSeconds % 60
 
     this.displayTarget.textContent = `${minutes}:${seconds.toString().padStart(2, "0")}`
+    this.remainingFieldTarget.value = this.remainingSeconds
     this.progressTarget.style.width = `${this.progressPercentage()}%`
   }
 
@@ -50,7 +60,7 @@ export default class extends Controller {
     return (this.remainingSeconds / this.durationValue) * 100
   }
 
-  finish() {
+  finish({ showAlert = true } = {}) {
     if (this.hasFinished) {
       return
     }
@@ -59,8 +69,9 @@ export default class extends Controller {
     this.clearTimer()
     this.showTimeoutMessage()
     this.updateFinishedStyle()
+    this.enableCompletedButton()
 
-    if (this.hasAlertMessageValue) {
+    if (showAlert && this.hasAlertMessageValue) {
       window.alert(this.alertMessageValue)
     }
   }
@@ -79,5 +90,27 @@ export default class extends Controller {
     this.containerTarget.classList.add("border-amber-300", "bg-amber-50/95")
     this.progressTarget.classList.remove("bg-blue-600")
     this.progressTarget.classList.add("bg-amber-500")
+  }
+
+  disableCompletedButton() {
+    this.completedButtonTarget.disabled = true
+    this.completedButtonTarget.classList.add("cursor-not-allowed", "opacity-50")
+  }
+
+  enableCompletedButton() {
+    this.completedButtonTarget.disabled = false
+    this.completedButtonTarget.classList.remove("cursor-not-allowed", "opacity-50")
+  }
+
+  normalizedInitialRemainingSeconds() {
+    if (this.initialRemainingValue < 0) {
+      return 0
+    }
+
+    if (this.initialRemainingValue > this.durationValue) {
+      return this.durationValue
+    }
+
+    return this.initialRemainingValue
   }
 }
