@@ -1,9 +1,13 @@
 <% timer_enabled = local_assigns.fetch(:show_timer, false) %>
+<% timer_duration = WritingEntry::TIMER_DURATION_SECONDS %>
+<% timer_remaining_seconds = writing_entry.timer_remaining_seconds || timer_duration %>
+<% timer_remaining_seconds = timer_remaining_seconds.clamp(0, timer_duration) %>
 
 <%= form_with model: writing_entry,
               class: "space-y-8",
               data: (timer_enabled ? { controller: "writing-timer",
-                                       writing_timer_duration_value: 480,
+                                       writing_timer_duration_value: timer_duration,
+                                       writing_timer_initial_remaining_value: timer_remaining_seconds,
                                        writing_timer_alert_message_value: t("writing_entries.form.timer.alert") } : {}) do |form| %>
   <% if writing_entry.errors.any? %>
     <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800" role="alert">
@@ -28,13 +32,16 @@
           <p class="text-xs font-semibold text-blue-600"><%= t("writing_entries.form.timer.remaining") %></p>
           <output class="mt-1 block text-3xl font-bold tabular-nums text-blue-950"
                   data-writing-timer-target="display"
-                  aria-live="polite">8:00</output>
+                  aria-live="polite"><%= "#{timer_remaining_seconds / 60}:#{format('%02d', timer_remaining_seconds % 60)}" %></output>
         </div>
       </div>
+      <%= form.hidden_field :timer_remaining_seconds,
+                            value: timer_remaining_seconds,
+                            data: { writing_timer_target: "remainingField" } %>
       <div class="mt-5 h-2 overflow-hidden rounded-full bg-white ring-1 ring-blue-100">
         <div class="h-full rounded-full bg-blue-600 transition-all duration-500"
              data-writing-timer-target="progress"
-             style="width: 100%"></div>
+             style="width: <%= (timer_remaining_seconds.to_f / timer_duration * 100).round(2) %>%"></div>
       </div>
       <p class="mt-4 hidden rounded-lg border border-amber-200 bg-white px-4 py-3 text-sm font-semibold text-amber-800"
          data-writing-timer-target="timeoutMessage"
@@ -105,6 +112,7 @@
     <%= form.button submit_label,
                     name: "writing_entry[status]",
                     value: "completed",
-                    class: "w-full cursor-pointer rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" %>
+                    data: (timer_enabled ? { writing_timer_target: "completedButton" } : {}),
+                    class: "w-full cursor-pointer rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:hover:bg-blue-600" %>
   </div>
 <% end %>

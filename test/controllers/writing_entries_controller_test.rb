@@ -209,11 +209,15 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", writing_entries_path, "編集をキャンセル"
     assert_select "a[href=?][data-turbo-method=delete]", writing_entry_path(writing_entry), "削除する"
     assert_select "form[data-controller='writing-timer'][data-writing-timer-duration-value='480']"
+    assert_select "form[data-writing-timer-initial-remaining-value='480']"
     assert_select "form[data-writing-timer-alert-message-value=?]",
                   "8分が経過しました。書き終わっていない方は続けてください。書き終わった方は書いた後の幸福度を入力してください。"
     assert_select "[data-writing-timer-target=display]", "8:00"
+    assert_select "input[name=?][value=480][data-writing-timer-target=remainingField]",
+                  "writing_entry[timer_remaining_seconds]"
     assert_select "[data-writing-timer-target=timeoutMessage].hidden", "8分が経過しました。書き終わっていない方は続けてください。書き終わった方は書いた後の幸福度を入力してください。"
     assert_select "h2", "8分タイマー"
+    assert_select "button[name=?][value=completed][data-writing-timer-target=completedButton]", "writing_entry[status]"
   end
 
   test "redirects guests who try to update an entry" do
@@ -285,6 +289,7 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     patch writing_entry_url(writing_entry), params: {
       writing_entry: {
         event_detail: "下書き更新",
+        timer_remaining_seconds: 222,
         status: "draft"
       }
     }
@@ -294,6 +299,7 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     writing_entry.reload
     assert_predicate writing_entry, :draft?
     assert_equal "下書き更新", writing_entry.event_detail
+    assert_equal 222, writing_entry.timer_remaining_seconds
   end
 
   test "updates a draft entry as completed" do
@@ -478,11 +484,15 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
                   "writing_entry[after_happiness_score]"
 
     assert_select "form[data-controller='writing-timer'][data-writing-timer-duration-value='480']"
+    assert_select "form[data-writing-timer-initial-remaining-value='480']"
     assert_select "form[data-writing-timer-alert-message-value=?]",
                   "8分が経過しました。書き終わっていない方は続けてください。書き終わった方は書いた後の幸福度を入力してください。"
     assert_select "[data-writing-timer-target=display]", "8:00"
+    assert_select "input[name=?][value=480][data-writing-timer-target=remainingField]",
+                  "writing_entry[timer_remaining_seconds]"
     assert_select "[data-writing-timer-target=timeoutMessage].hidden", "8分が経過しました。書き終わっていない方は続けてください。書き終わった方は書いた後の幸福度を入力してください。"
     assert_select "h2", "8分タイマー"
+    assert_select "button[name=?][value=completed][data-writing-timer-target=completedButton]", "writing_entry[status]"
 
     WritingEntry::DETAIL_ATTRIBUTES.each do |attribute|
       assert_select "textarea[name=?][maxlength=3000][required]",
@@ -535,6 +545,7 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     writing_entry = @user.writing_entries.order(:created_at).last
 
     assert_predicate writing_entry, :completed?
+    assert_equal 0, writing_entry.timer_remaining_seconds
     assert_equal 5, writing_entry.before_happiness_score
     assert_equal 7, writing_entry.after_happiness_score
     assert_equal "今日あったこと", writing_entry.event_detail
@@ -550,12 +561,13 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     login_as(@user)
 
     assert_difference("@user.writing_entries.count", 1) do
-      post writing_entries_url, params: { writing_entry: { status: "draft" } }
+      post writing_entries_url, params: { writing_entry: { status: "draft", timer_remaining_seconds: 321 } }
     end
 
     writing_entry = @user.writing_entries.order(:created_at).last
 
     assert_predicate writing_entry, :draft?
+    assert_equal 321, writing_entry.timer_remaining_seconds
     assert_nil writing_entry.before_happiness_score
     assert_nil writing_entry.after_happiness_score
     WritingEntry::DETAIL_ATTRIBUTES.each do |attribute|
@@ -563,6 +575,45 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
     end
     assert_redirected_to root_url
     assert_equal "下書きを保存しました", flash[:notice]
+  end
+
+  test "resumes a draft entry from the saved timer remaining seconds" do
+    writing_entry = create_writing_entry(
+      @user,
+      event_detail: nil,
+      negative_emotion_detail: nil,
+      positive_emotion_detail: nil,
+      unforgiven_target_detail: nil,
+      tomorrow_hope: nil,
+      before_happiness_score: nil,
+      after_happiness_score: nil,
+      status: :draft,
+      timer_remaining_seconds: 125
+    )
+    login_as(@user)
+
+    get edit_writing_entry_url(writing_entry)
+
+    assert_select "form[data-writing-timer-initial-remaining-value='125']"
+    assert_select "[data-writing-timer-target=display]", "2:05"
+    assert_select "input[name=?][value=125]", "writing_entry[timer_remaining_seconds]"
+  end
+
+  test "does not create a completed entry before the timer finishes" do
+    login_as(@user)
+
+    assert_no_difference("WritingEntry.count") do
+      post writing_entries_url, params: {
+        writing_entry: valid_writing_entry_params.merge(
+          status: "completed",
+          timer_remaining_seconds: 1
+        )
+      }
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "[role=alert]", text: /タイマー終了後/
+    assert_select "input[name=?][value=1]", "writing_entry[timer_remaining_seconds]"
   end
 
   test "renders the form with errors when the entry is invalid" do
@@ -620,16 +671,23 @@ class WritingEntriesControllerTest < ActionDispatch::IntegrationTest
       negative_emotion_detail: "不安を感じた",
       positive_emotion_detail: "うれしかった",
       unforgiven_target_detail: "まだ許せないこと",
-      tomorrow_hope: "穏やかに過ごしたい"
+      tomorrow_hope: "穏やかに過ごしたい",
+      timer_remaining_seconds: 0
     }
   end
 
   def create_writing_entry(user, attributes = {})
+    entry_attributes = valid_writing_entry_params.merge(
+      status: :completed,
+      created_at: Time.current
+    ).merge(attributes)
+
+    if entry_attributes[:status].to_s == "draft" && !attributes.key?(:timer_remaining_seconds)
+      entry_attributes[:timer_remaining_seconds] = WritingEntry::TIMER_DURATION_SECONDS
+    end
+
     user.writing_entries.create!(
-      valid_writing_entry_params.merge(
-        status: :completed,
-        created_at: Time.current
-      ).merge(attributes)
+      entry_attributes
     )
   end
 end

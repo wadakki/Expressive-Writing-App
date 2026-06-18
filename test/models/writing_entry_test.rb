@@ -34,6 +34,10 @@ class WritingEntryTest < ActiveSupport::TestCase
     assert_predicate @user.writing_entries.build, :draft?
   end
 
+  test "defaults timer remaining seconds to the writing timer duration" do
+    assert_equal WritingEntry::TIMER_DURATION_SECONDS, @user.writing_entries.build.timer_remaining_seconds
+  end
+
   test "rejects an invalid status" do
     entry = @user.writing_entries.build(valid_attributes.merge(status: :invalid))
 
@@ -100,6 +104,32 @@ class WritingEntryTest < ActiveSupport::TestCase
     assert @user.writing_entries.build(status: :draft).valid?
   end
 
+  test "accepts timer remaining seconds from zero through the duration" do
+    [ 0, WritingEntry::TIMER_DURATION_SECONDS ].each do |seconds|
+      entry = @user.writing_entries.build(valid_attributes.merge(timer_remaining_seconds: seconds))
+
+      assert entry.valid?
+    end
+  end
+
+  test "rejects timer remaining seconds outside zero through the duration" do
+    [ -1, WritingEntry::TIMER_DURATION_SECONDS + 1 ].each do |seconds|
+      entry = @user.writing_entries.build(valid_attributes.merge(timer_remaining_seconds: seconds))
+
+      assert_not entry.valid?
+      assert entry.errors[:timer_remaining_seconds].any?
+    end
+  end
+
+  test "requires the timer to finish before completing" do
+    entry = @user.writing_entries.build(
+      valid_attributes.merge(status: :completed, timer_remaining_seconds: 1)
+    )
+
+    assert_not entry.valid?
+    assert_includes entry.errors[:timer_remaining_seconds], "はタイマー終了後にしてください"
+  end
+
   test "accepts detail attributes with 3000 characters" do
     WritingEntry::DETAIL_ATTRIBUTES.each do |attribute|
       entry = @user.writing_entries.build(valid_attributes.merge(attribute => "あ" * 3000))
@@ -130,7 +160,8 @@ class WritingEntryTest < ActiveSupport::TestCase
       negative_emotion_detail: "不安を感じた",
       positive_emotion_detail: "うれしかった",
       unforgiven_target_detail: "まだ許せないこと",
-      tomorrow_hope: "穏やかに過ごしたい"
+      tomorrow_hope: "穏やかに過ごしたい",
+      timer_remaining_seconds: 0
     }
   end
 end

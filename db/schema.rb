@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_12_123009) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_17_032000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -36,10 +36,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_12_123009) do
     t.integer "status", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "timer_remaining_seconds", default: 480, null: false
     t.index ["user_id"], name: "index_writing_entries_on_user_id"
     t.check_constraint "after_happiness_score IS NULL OR after_happiness_score >= 1 AND after_happiness_score <= 10", name: "writing_entries_after_happiness_score_range"
     t.check_constraint "before_happiness_score IS NULL OR before_happiness_score >= 1 AND before_happiness_score <= 10", name: "writing_entries_before_happiness_score_range"
     t.check_constraint "status = ANY (ARRAY[0, 1])", name: "writing_entries_status_values"
+    t.check_constraint "timer_remaining_seconds >= 0 AND timer_remaining_seconds <= 480", name: "writing_entries_timer_remaining_seconds_range"
   end
 
   add_foreign_key "writing_entries", "users"

@@ -7,6 +7,8 @@ class WritingEntry < ApplicationRecord
     tomorrow_hope
   ].freeze
 
+  TIMER_DURATION_SECONDS = 480
+
   belongs_to :user
 
   enum :status, { draft: 0, completed: 1 }, default: :draft, validate: true
@@ -17,4 +19,16 @@ class WritingEntry < ApplicationRecord
             presence: true, if: :completed?
   validates :before_happiness_score, :after_happiness_score,
             numericality: { only_integer: true, in: 1..10 }, allow_nil: true
+  validates :timer_remaining_seconds,
+            numericality: { only_integer: true, in: 0..TIMER_DURATION_SECONDS },
+            allow_nil: false
+  validate :timer_finished_when_completed
+
+  private
+
+  def timer_finished_when_completed
+    return unless completed? && timer_remaining_seconds.to_i.positive?
+
+    errors.add(:timer_remaining_seconds, "はタイマー終了後にしてください")
+  end
 end
