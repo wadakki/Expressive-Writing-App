@@ -3,6 +3,7 @@ ja:
     models:
       user: ユーザー
       writing_entry: 筆記開示
+      notification_setting: 通知設定
     attributes:
       user:
         name: 名前
@@ -17,3 +18,6 @@ ja:
         positive_emotion_detail: ポジティブな感情
         unforgiven_target_detail: 許せない相手や出来事
         tomorrow_hope: 明日の希望
+      notification_setting:
+        notification_enabled: 通知
+        notification_time: 通知時刻
