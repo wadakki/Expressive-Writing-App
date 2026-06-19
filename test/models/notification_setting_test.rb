@@ -10,7 +10,7 @@ class NotificationSettingTest < ActiveSupport::TestCase
     )
   end
 
-  test "is valid with a user notification flag and notification time" do
+  test "is valid with a user notification flag notification time and reminder days" do
     notification_setting = build_notification_setting
 
     assert notification_setting.valid?
@@ -75,14 +75,58 @@ class NotificationSettingTest < ActiveSupport::TestCase
     assert_includes notification_setting.errors[:notification_time], "を入力してください"
   end
 
+  test "stores reminder days in a string column" do
+    assert_equal :string, NotificationSetting.columns_hash["reminder_days"].type
+  end
+
+  test "accepts valid reminder days" do
+    notification_setting = build_notification_setting(reminder_days: [ 0, 3, 6 ])
+
+    assert notification_setting.valid?
+  end
+
+  test "rejects reminder days outside zero through six" do
+    [ -1, 7 ].each do |invalid_day|
+      notification_setting = build_notification_setting(reminder_days: [ invalid_day ])
+
+      assert_not notification_setting.valid?
+      assert_includes notification_setting.errors[:reminder_days], "は一覧にありません"
+    end
+  end
+
+  test "rejects non numeric reminder days" do
+    notification_setting = build_notification_setting(reminder_days: [ "invalid" ])
+
+    assert_not notification_setting.valid?
+    assert_includes notification_setting.errors[:reminder_days], "は一覧にありません"
+  end
+
+  test "requires reminder days when notification is enabled" do
+    notification_setting = build_notification_setting(
+      notification_enabled: true,
+      reminder_days: []
+    )
+
+    assert_not notification_setting.valid?
+    assert_includes notification_setting.errors[:reminder_days], "を入力してください"
+  end
+
+  test "allows reminder days to be empty when notification is disabled" do
+    notification_setting = build_notification_setting(reminder_days: [])
+
+    assert notification_setting.valid?
+  end
+
   private
 
   def build_notification_setting(user: @user, notification_enabled: false,
-                                 notification_time: "21:00")
+                                 notification_time: "21:00",
+                                 reminder_days: NotificationSetting::VALID_REMINDER_DAYS)
     NotificationSetting.new(
       user:,
       notification_enabled:,
-      notification_time:
+      notification_time:,
+      reminder_days:
     )
   end
 end

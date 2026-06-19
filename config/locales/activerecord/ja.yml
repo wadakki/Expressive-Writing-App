@@ -22,6 +22,7 @@ ja:
       notification_setting:
         notification_enabled: 通知
         notification_time: 通知時刻
+        reminder_days: 通知曜日
       line_connection:
         line_user_id: LINEユーザーID
         status: 連携状態

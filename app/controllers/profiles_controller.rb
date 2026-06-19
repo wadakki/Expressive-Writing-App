@@ -30,7 +30,11 @@ class ProfilesController < ApplicationController
   end
 
   def build_default_notification_setting
-    current_user.build_notification_setting(notification_enabled: false, notification_time: "21:00")
+    current_user.build_notification_setting(
+      notification_enabled: false,
+      notification_time: "21:00",
+      reminder_days: NotificationSetting::VALID_REMINDER_DAYS
+    )
   end
 
   def assign_update_attributes
@@ -59,7 +63,8 @@ class ProfilesController < ApplicationController
   def notification_setting_params
     params.fetch(:notification_setting, ActionController::Parameters.new).permit(
       :notification_enabled,
-      :notification_time
+      :notification_time,
+      reminder_days: []
     )
   end
 end
