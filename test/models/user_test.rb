@@ -82,6 +82,17 @@ class UserTest < ActiveSupport::TestCase
     assert_equal notification_setting, user.notification_setting
   end
 
+  test "has one line connection" do
+    user = build_user(email: "line-connection-owner@example.com")
+    user.save!
+    line_connection = user.create_line_connection!(
+      line_user_id: "line-user-owner",
+      status: :linked
+    )
+
+    assert_equal line_connection, user.line_connection
+  end
+
   private
 
   def build_user(name: "Test User", email: "user@example.com", password: "password",

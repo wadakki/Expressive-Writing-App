@@ -10,9 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_18_000000) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_19_013708) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "line_connections", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "line_user_id", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "linked_at", null: false
+    t.datetime "last_notified_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["line_user_id"], name: "index_line_connections_on_line_user_id", unique: true
+    t.index ["user_id"], name: "index_line_connections_on_user_id", unique: true
+    t.check_constraint "status = ANY (ARRAY[0, 1])", name: "line_connections_status_values"
+  end
 
   create_table "notification_settings", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -53,6 +66,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_18_000000) do
     t.check_constraint "timer_remaining_seconds >= 0 AND timer_remaining_seconds <= 480", name: "writing_entries_timer_remaining_seconds_range"
   end
 
+  add_foreign_key "line_connections", "users"
   add_foreign_key "notification_settings", "users"
   add_foreign_key "writing_entries", "users"
 end
