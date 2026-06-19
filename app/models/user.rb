@@ -3,6 +3,7 @@ class User < ApplicationRecord
 
   has_many :writing_entries, dependent: :destroy
   has_one :notification_setting, dependent: :destroy
+  has_one :line_connection, dependent: :destroy
 
   validates :name, presence: true, length: { maximum: 50 }
   validates :email, presence: true, uniqueness: { case_sensitive: false },
