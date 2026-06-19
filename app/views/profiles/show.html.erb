@@ -8,82 +8,138 @@
       </h1>
     </div>
 
-    <section class="mt-10 rounded-2xl border border-blue-100 bg-white p-6 shadow-sm sm:p-8">
-      <div class="flex flex-col gap-6 border-b border-blue-100 pb-8 sm:flex-row sm:items-center">
-        <div class="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-blue-600 text-2xl font-bold text-white shadow-sm" aria-hidden="true">
-          <%= current_user.name.to_s.first.upcase %>
-        </div>
-        <div>
-          <h2 class="text-xl font-bold text-blue-950"><%= current_user.name %></h2>
-          <p class="mt-1 text-sm text-slate-600"><%= current_user.email %></p>
-        </div>
-      </div>
-
-      <% if @user.errors.any? %>
-        <div class="mt-8 rounded-lg border border-red-200 bg-red-50 p-4" role="alert">
-          <p class="font-semibold text-red-800"><%= t(".error_heading") %></p>
-          <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-red-700">
-            <% @user.errors.full_messages.each do |message| %>
-              <li><%= message %></li>
-            <% end %>
-          </ul>
-        </div>
-      <% end %>
-
-      <%= form_with model: @user, url: profile_path, method: :patch, class: "mt-8 space-y-6" do |form| %>
-        <div>
-          <%= form.label :name, t(".name_label"), class: "block text-sm font-medium text-blue-950" %>
-          <%= form.text_field :name,
-                              required: true,
-                              maxlength: 50,
-                              autocomplete: "name",
-                              class: "mt-2 block w-full rounded-lg border border-blue-200 bg-blue-50/40 px-3 py-2 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200" %>
-          <p class="mt-1 text-xs text-slate-500"><%= t(".name_hint") %></p>
-        </div>
-
-        <div>
-          <%= form.label :email, t(".email_label"), class: "block text-sm font-medium text-blue-950" %>
-          <%= form.email_field :email,
-                               required: true,
-                               autocomplete: "email",
-                               class: "mt-2 block w-full rounded-lg border border-blue-200 bg-blue-50/40 px-3 py-2 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200" %>
-        </div>
-
-        <div>
-          <%= label_tag :masked_password, t(".password_label"), class: "block text-sm font-medium text-blue-950" %>
-          <%= password_field_tag :masked_password,
-                                 "********",
-                                 disabled: true,
-                                 class: "mt-2 block w-full rounded-lg border border-blue-200 bg-slate-100 px-3 py-2 text-slate-500 shadow-sm" %>
-          <p class="mt-1 text-xs text-slate-500"><%= t(".password_display_hint") %></p>
-        </div>
-
-        <div class="rounded-xl border border-blue-100 bg-blue-50/50 p-4">
-          <h2 class="text-sm font-semibold text-blue-950"><%= t(".password_change_heading") %></h2>
-          <p class="mt-1 text-xs text-slate-600"><%= t(".password_change_hint") %></p>
-
-          <div class="mt-4 space-y-4">
-            <div>
-              <%= form.label :password, t(".new_password_label"), class: "block text-sm font-medium text-blue-950" %>
-              <%= form.password_field :password,
-                                      minlength: 8,
-                                      autocomplete: "new-password",
-                                      class: "mt-2 block w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200" %>
-            </div>
-
-            <div>
-              <%= form.label :password_confirmation, t(".password_confirmation_label"), class: "block text-sm font-medium text-blue-950" %>
-              <%= form.password_field :password_confirmation,
-                                      minlength: 8,
-                                      autocomplete: "new-password",
-                                      class: "mt-2 block w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200" %>
-            </div>
+    <%= form_with model: @user, url: profile_path, method: :patch, class: "mt-10 space-y-8" do |form| %>
+      <section class="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm sm:p-8">
+        <div class="flex flex-col gap-6 border-b border-blue-100 pb-8 sm:flex-row sm:items-center">
+          <div class="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-blue-600 text-2xl font-bold text-white shadow-sm" aria-hidden="true">
+            <%= current_user.name.to_s.first.upcase %>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-blue-950"><%= current_user.name %></h2>
+            <p class="mt-1 text-sm text-slate-600"><%= current_user.email %></p>
           </div>
         </div>
 
-        <%= form.submit t(".submit"),
-                        class: "w-full cursor-pointer rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" %>
-      <% end %>
-    </section>
+        <% if @user.errors.any? %>
+          <div class="mt-8 rounded-lg border border-red-200 bg-red-50 p-4" role="alert">
+            <p class="font-semibold text-red-800"><%= t(".error_heading") %></p>
+            <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-red-700">
+              <% @user.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <div class="mt-8 space-y-6">
+          <div>
+            <%= form.label :name, t(".name_label"), class: "block text-sm font-medium text-blue-950" %>
+            <%= form.text_field :name,
+                                required: true,
+                                maxlength: 50,
+                                autocomplete: "name",
+                                class: "mt-2 block w-full rounded-lg border border-blue-200 bg-blue-50/40 px-3 py-2 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200" %>
+            <p class="mt-1 text-xs text-slate-500"><%= t(".name_hint") %></p>
+          </div>
+
+          <div>
+            <%= form.label :email, t(".email_label"), class: "block text-sm font-medium text-blue-950" %>
+            <%= form.email_field :email,
+                                 required: true,
+                                 autocomplete: "email",
+                                 class: "mt-2 block w-full rounded-lg border border-blue-200 bg-blue-50/40 px-3 py-2 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200" %>
+          </div>
+
+          <div>
+            <%= label_tag :masked_password, t(".password_label"), class: "block text-sm font-medium text-blue-950" %>
+            <%= password_field_tag :masked_password,
+                                   "********",
+                                   disabled: true,
+                                   class: "mt-2 block w-full rounded-lg border border-blue-200 bg-slate-100 px-3 py-2 text-slate-500 shadow-sm" %>
+            <p class="mt-1 text-xs text-slate-500"><%= t(".password_display_hint") %></p>
+          </div>
+
+          <div class="rounded-xl border border-blue-100 bg-blue-50/50 p-4">
+            <h2 class="text-sm font-semibold text-blue-950"><%= t(".password_change_heading") %></h2>
+            <p class="mt-1 text-xs text-slate-600"><%= t(".password_change_hint") %></p>
+
+            <div class="mt-4 space-y-4">
+              <div>
+                <%= form.label :password, t(".new_password_label"), class: "block text-sm font-medium text-blue-950" %>
+                <%= form.password_field :password,
+                                        minlength: 8,
+                                        autocomplete: "new-password",
+                                        class: "mt-2 block w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200" %>
+              </div>
+
+              <div>
+                <%= form.label :password_confirmation, t(".password_confirmation_label"), class: "block text-sm font-medium text-blue-950" %>
+                <%= form.password_field :password_confirmation,
+                                        minlength: 8,
+                                        autocomplete: "new-password",
+                                        class: "mt-2 block w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200" %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm sm:p-8">
+        <div>
+          <h2 class="text-2xl font-bold tracking-tight text-blue-950"><%= t(".notification_heading") %></h2>
+          <p class="mt-2 text-sm leading-7 text-slate-600"><%= t(".notification_description") %></p>
+        </div>
+
+        <% if @notification_setting.errors.any? %>
+          <div class="mt-8 rounded-lg border border-red-200 bg-red-50 p-4" role="alert">
+            <p class="font-semibold text-red-800"><%= t(".notification_error_heading") %></p>
+            <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-red-700">
+              <% @notification_setting.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <%= fields_for :notification_setting, @notification_setting do |notification_form| %>
+          <div class="mt-8 space-y-7">
+            <div class="rounded-xl border border-blue-100 bg-blue-50/60 p-5">
+              <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <%= notification_form.label :notification_enabled,
+                                              t(".notification_enabled_label"),
+                                              class: "block text-base font-semibold text-blue-950" %>
+                  <p class="mt-1 text-sm leading-6 text-slate-600"><%= t(".notification_enabled_hint") %></p>
+                </div>
+                <label class="inline-flex cursor-pointer items-center gap-3 rounded-full bg-white px-4 py-2 text-sm font-semibold text-blue-900 shadow-sm ring-1 ring-blue-100">
+                  <%= notification_form.check_box :notification_enabled,
+                                                  class: "h-5 w-5 rounded border-blue-300 text-blue-600 focus:ring-blue-500" %>
+                  <span><%= t(".notification_enabled_switch") %></span>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <%= notification_form.label :notification_time,
+                                          t(".notification_time_label"),
+                                          class: "block text-sm font-medium text-blue-950" %>
+              <%= notification_form.time_field :notification_time,
+                                               value: @notification_setting.notification_time&.strftime("%H:%M"),
+                                               required: true,
+                                               class: "mt-2 block w-full rounded-lg border border-blue-200 bg-blue-50/40 px-3 py-2 text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 sm:w-48" %>
+              <p class="mt-1 text-xs text-slate-500"><%= t(".notification_time_hint") %></p>
+            </div>
+
+            <div class="rounded-xl border border-blue-100 bg-white p-5">
+              <h3 class="text-sm font-semibold text-blue-950"><%= t(".line_notice_heading") %></h3>
+              <p class="mt-2 text-sm leading-6 text-slate-600"><%= t(".line_notice_body") %></p>
+            </div>
+          </div>
+        <% end %>
+      </section>
+
+      <%= form.submit t(".submit"),
+                      class: "w-full cursor-pointer rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" %>
+    <% end %>
   </div>
 </main>

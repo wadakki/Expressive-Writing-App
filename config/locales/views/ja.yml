@@ -219,5 +219,15 @@ ja:
       password_confirmation_label: 新しいパスワード（確認）
       submit: 更新する
       error_heading: 入力内容を確認してください
+      notification_heading: 通知設定
+      notification_description: LINE通知のON/OFFと通知時刻を設定できます。
+      notification_error_heading: 通知設定の入力内容を確認してください
+      notification_enabled_label: LINE通知
+      notification_enabled_hint: オンにすると、設定した時刻に筆記開示のリマインド通知を受け取る想定です。
+      notification_enabled_switch: 通知をオンにする
+      notification_time_label: 通知時刻
+      notification_time_hint: MVPでは曜日指定は行わず、毎日同じ時刻として扱います。
+      line_notice_heading: LINE通知について
+      line_notice_body: LINE連携と実際の通知送信は、通知機能を実装するタイミングで接続します。この画面ではプロフィール情報と通知設定をまとめて保存します。
     update:
       success: プロフィールを更新しました

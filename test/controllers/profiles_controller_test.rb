@@ -25,32 +25,45 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", "プロフィール"
     assert_select "h2", "プロフィールユーザー"
-    assert_select "form[action=?][method=post]", profile_path
+    assert_select "form[action=?][method=post]", profile_path, count: 1
     assert_select "input[name=?][value=?]", "user[name]", "プロフィールユーザー"
     assert_select "input[name=?][value=?]", "user[email]", "profile@example.com"
     assert_select "input[type=password][name=?][value=?][disabled]", "masked_password", "********"
     assert_select "input[type=password][name=?]", "user[password]"
     assert_select "input[type=password][name=?]", "user[password_confirmation]"
-    assert_select "input[type=submit][value=?]", "更新する"
+    assert_select "input[type=submit][value=?]", "更新する", count: 1
+    assert_select "h2", "通知設定"
+    assert_select "input[name=?][type=hidden][value=0]", "notification_setting[notification_enabled]"
+    assert_select "input[name=?][type=checkbox]", "notification_setting[notification_enabled]"
+    assert_select "input[name=?][type=time][value='21:00'][required]",
+                  "notification_setting[notification_time]"
   end
 
-  test "updates the current user's name and email" do
+  test "updates the current user's profile and creates notification setting" do
     login_as(@user)
 
-    patch profile_url, params: {
-      user: {
-        name: "更新ユーザー",
-        email: "updated-profile@example.com",
-        password: "",
-        password_confirmation: ""
+    assert_difference("NotificationSetting.count", 1) do
+      patch profile_url, params: {
+        user: {
+          name: "更新ユーザー",
+          email: "updated-profile@example.com",
+          password: "",
+          password_confirmation: ""
+        },
+        notification_setting: {
+          notification_enabled: "1",
+          notification_time: "08:15"
+        }
       }
-    }
+    end
 
     assert_redirected_to profile_url
     assert_equal "プロフィールを更新しました", flash[:notice]
     @user.reload
     assert_equal "更新ユーザー", @user.name
     assert_equal "updated-profile@example.com", @user.email
+    assert_predicate @user.notification_setting, :notification_enabled?
+    assert_equal "08:15", @user.notification_setting.notification_time.strftime("%H:%M")
   end
 
   test "updates the current user's password" do
@@ -62,6 +75,10 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
         email: @user.email,
         password: "new-password",
         password_confirmation: "new-password"
+      },
+      notification_setting: {
+        notification_enabled: "0",
+        notification_time: "21:00"
       }
     }
 
@@ -87,6 +104,10 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
         email: "invalid-email",
         password: "short",
         password_confirmation: "different"
+      },
+      notification_setting: {
+        notification_enabled: "1",
+        notification_time: "21:00"
       }
     }
 
@@ -96,6 +117,73 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_select "[role=alert]", text: /メールアドレスは不正な値です/
     assert_select "[role=alert]", text: /パスワードは8文字以上で入力してください/
     assert_select "input[name=?][value=?]", "user[email]", "invalid-email"
+  end
+
+  test "shows the current user's existing notification setting" do
+    @user.create_notification_setting!(
+      notification_enabled: true,
+      notification_time: "07:30"
+    )
+    login_as(@user)
+
+    get profile_url
+
+    assert_response :success
+    assert_select "h2", "通知設定"
+    assert_select "input[name=?][type=checkbox][checked=checked]", "notification_setting[notification_enabled]"
+    assert_select "input[name=?][type=time][value='07:30']",
+                  "notification_setting[notification_time]"
+  end
+
+  test "updates the current user's existing notification setting through profile" do
+    notification_setting = @user.create_notification_setting!(
+      notification_enabled: true,
+      notification_time: "07:30"
+    )
+    login_as(@user)
+
+    patch profile_url, params: {
+      user: {
+        name: @user.name,
+        email: @user.email,
+        password: "",
+        password_confirmation: ""
+      },
+      notification_setting: {
+        notification_enabled: "0",
+        notification_time: "22:45"
+      }
+    }
+
+    assert_redirected_to profile_url
+    assert_equal "プロフィールを更新しました", flash[:notice]
+    notification_setting.reload
+    assert_not_predicate notification_setting, :notification_enabled?
+    assert_equal "22:45", notification_setting.notification_time.strftime("%H:%M")
+  end
+
+  test "renders errors when notification setting is invalid" do
+    login_as(@user)
+
+    assert_no_difference("NotificationSetting.count") do
+      patch profile_url, params: {
+        user: {
+          name: "通知設定エラー",
+          email: @user.email,
+          password: "",
+          password_confirmation: ""
+        },
+        notification_setting: {
+          notification_enabled: "1",
+          notification_time: ""
+        }
+      }
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "[role=alert]", text: /通知設定の入力内容を確認してください/
+    assert_select "[role=alert]", text: /通知時刻を入力してください/
+    assert_equal "プロフィールユーザー", @user.reload.name
   end
 
   test "does not allow guests to update a profile" do
@@ -125,6 +213,10 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
         name: "本人だけ更新",
         email: "self-only@example.com",
         id: other_user.id
+      },
+      notification_setting: {
+        notification_enabled: "0",
+        notification_time: "21:00"
       }
     }
 
