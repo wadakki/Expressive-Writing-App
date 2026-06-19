@@ -37,6 +37,10 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[name=?][type=checkbox]", "notification_setting[notification_enabled]"
     assert_select "input[name=?][type=time][value='21:00'][required]",
                   "notification_setting[notification_time]"
+    assert_select "input[type=checkbox][name=?]",
+                  "notification_setting[reminder_days][]", count: 7
+    assert_select "input[type=checkbox][name=?][checked=checked]",
+                  "notification_setting[reminder_days][]", count: 7
   end
 
   test "updates the current user's profile and creates notification setting" do
@@ -52,7 +56,8 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
         },
         notification_setting: {
           notification_enabled: "1",
-          notification_time: "08:15"
+          notification_time: "08:15",
+          reminder_days: %w[1 3 5]
         }
       }
     end
@@ -64,6 +69,7 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "updated-profile@example.com", @user.email
     assert_predicate @user.notification_setting, :notification_enabled?
     assert_equal "08:15", @user.notification_setting.notification_time.strftime("%H:%M")
+    assert_equal [ 1, 3, 5 ], @user.notification_setting.reminder_days
   end
 
   test "updates the current user's password" do
@@ -112,6 +118,7 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     }
 
     assert_response :unprocessable_entity
+    assert_select "#profile-update-error[role=alert]", text: /更新できませんでした/
     assert_select "[role=alert]", text: /入力内容を確認してください/
     assert_select "[role=alert]", text: /名前を入力してください/
     assert_select "[role=alert]", text: /メールアドレスは不正な値です/
@@ -122,7 +129,8 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
   test "shows the current user's existing notification setting" do
     @user.create_notification_setting!(
       notification_enabled: true,
-      notification_time: "07:30"
+      notification_time: "07:30",
+      reminder_days: [ 1, 3, 5 ]
     )
     login_as(@user)
 
@@ -133,12 +141,17 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[name=?][type=checkbox][checked=checked]", "notification_setting[notification_enabled]"
     assert_select "input[name=?][type=time][value='07:30']",
                   "notification_setting[notification_time]"
+    %w[1 3 5].each do |day|
+      assert_select "input[type=checkbox][name=?][value=?][checked=checked]",
+                    "notification_setting[reminder_days][]", day
+    end
   end
 
   test "updates the current user's existing notification setting through profile" do
     notification_setting = @user.create_notification_setting!(
       notification_enabled: true,
-      notification_time: "07:30"
+      notification_time: "07:30",
+      reminder_days: [ 1, 3, 5 ]
     )
     login_as(@user)
 
@@ -151,7 +164,8 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
       },
       notification_setting: {
         notification_enabled: "0",
-        notification_time: "22:45"
+        notification_time: "22:45",
+        reminder_days: %w[0 6]
       }
     }
 
@@ -160,6 +174,61 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     notification_setting.reload
     assert_not_predicate notification_setting, :notification_enabled?
     assert_equal "22:45", notification_setting.notification_time.strftime("%H:%M")
+    assert_equal [ 0, 6 ], notification_setting.reminder_days
+  end
+
+  test "renders errors when reminder days are invalid" do
+    login_as(@user)
+
+    assert_no_difference("NotificationSetting.count") do
+      patch profile_url, params: {
+        user: {
+          name: "曜日エラー",
+          email: @user.email,
+          password: "",
+          password_confirmation: ""
+        },
+        notification_setting: {
+          notification_enabled: "1",
+          notification_time: "21:00",
+          reminder_days: [ "7" ]
+        }
+      }
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "#profile-update-error[role=alert]", text: /更新できませんでした/
+    assert_select "[role=alert]", text: /通知設定は保存されていません/
+    assert_select "[role=alert]", text: /通知曜日は一覧にありません/
+    assert_select "fieldset[aria-invalid=true]", text: /通知曜日は一覧にありません/
+    assert_equal "プロフィールユーザー", @user.reload.name
+  end
+
+  test "clearly shows errors when notification is enabled without reminder days" do
+    login_as(@user)
+
+    assert_no_difference("NotificationSetting.count") do
+      patch profile_url, params: {
+        user: {
+          name: "曜日未選択",
+          email: @user.email,
+          password: "",
+          password_confirmation: ""
+        },
+        notification_setting: {
+          notification_enabled: "1",
+          notification_time: "21:00",
+          reminder_days: [ "" ]
+        }
+      }
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "#profile-update-error[role=alert]", text: /更新できませんでした/
+    assert_select "#profile-update-error", text: /変更内容は保存されていません/
+    assert_select "[role=alert]", text: /通知設定は保存されていません/
+    assert_select "fieldset[aria-invalid=true]", text: /通知曜日を入力してください/
+    assert_equal "プロフィールユーザー", @user.reload.name
   end
 
   test "renders errors when notification setting is invalid" do
@@ -181,7 +250,7 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_entity
-    assert_select "[role=alert]", text: /通知設定の入力内容を確認してください/
+    assert_select "[role=alert]", text: /通知設定は保存されていません/
     assert_select "[role=alert]", text: /通知時刻を入力してください/
     assert_equal "プロフィールユーザー", @user.reload.name
   end

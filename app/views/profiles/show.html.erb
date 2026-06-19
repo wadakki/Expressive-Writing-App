@@ -8,8 +8,16 @@
       </h1>
     </div>
 
+    <% if @user.errors.any? || @notification_setting.errors.any? %>
+      <div id="profile-update-error" class="mt-6 rounded-xl border-2 border-red-400 bg-red-50 p-5 shadow-sm" role="alert" aria-live="assertive">
+        <p class="text-lg font-bold text-red-900"><%= t(".update_failed_heading") %></p>
+        <p class="mt-1 text-sm leading-6 text-red-800"><%= t(".update_failed_body") %></p>
+      </div>
+    <% end %>
+
     <%= form_with model: @user, url: profile_path, method: :patch, class: "mt-10 space-y-8" do |form| %>
-      <section class="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm sm:p-8">
+      <% notification_border = @notification_setting.errors.any? ? "border-red-300 ring-2 ring-red-100" : "border-blue-100" %>
+      <section class="rounded-2xl border <%= notification_border %> bg-white p-6 shadow-sm sm:p-8">
         <div class="flex flex-col gap-6 border-b border-blue-100 pb-8 sm:flex-row sm:items-center">
           <div class="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-blue-600 text-2xl font-bold text-white shadow-sm" aria-hidden="true">
             <%= current_user.name.to_s.first.upcase %>
@@ -118,6 +126,36 @@
                 </label>
               </div>
             </div>
+
+            <% reminder_days_invalid = @notification_setting.errors[:reminder_days].any? %>
+            <% reminder_days_style = reminder_days_invalid ? "border-red-400 bg-red-50" : "border-transparent" %>
+            <fieldset class="rounded-xl border p-4 <%= reminder_days_style %>" aria-invalid="<%= reminder_days_invalid %>">
+              <legend class="block text-sm font-medium text-blue-950">
+                <%= t(".reminder_days_label") %>
+              </legend>
+              <p class="mt-1 text-xs <%= reminder_days_invalid ? "text-red-700" : "text-slate-500" %>"><%= t(".reminder_days_hint") %></p>
+
+              <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <%= notification_form.collection_check_boxes(
+                      :reminder_days,
+                      NotificationSetting::VALID_REMINDER_DAYS,
+                      :itself,
+                      ->(day) { t(".reminder_day_names.day_#{day}") }
+                    ) do |day_field| %>
+                  <%= day_field.label(class: "flex cursor-pointer items-center gap-2 rounded-lg border border-blue-100 bg-blue-50/40 px-3 py-2 text-sm font-medium text-blue-950") do %>
+                    <%= day_field.check_box(
+                          class: "h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500",
+                          aria: { invalid: reminder_days_invalid }
+                        ) %>
+                    <span><%= day_field.text %></span>
+                  <% end %>
+                <% end %>
+              </div>
+
+              <% if reminder_days_invalid %>
+                <p class="mt-3 font-semibold text-red-800"><%= @notification_setting.errors.full_messages_for(:reminder_days).join("、") %></p>
+              <% end %>
+            </fieldset>
 
             <div>
               <%= notification_form.label :notification_time,

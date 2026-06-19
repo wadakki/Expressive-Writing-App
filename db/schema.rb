@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_19_013708) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_19_114848) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -33,7 +33,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_19_013708) do
     t.time "notification_time", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "reminder_days", default: "[0,1,2,3,4,5,6]", null: false
     t.index ["user_id"], name: "index_notification_settings_on_user_id", unique: true
+    t.check_constraint "reminder_days::text ~ '^\\[([0-6](,[0-6])*)?\\]$'::text", name: "notification_settings_reminder_days_values"
   end
 
   create_table "users", force: :cascade do |t|
