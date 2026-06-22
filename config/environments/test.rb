@@ -34,6 +34,9 @@ Rails.application.configure do
   # Store uploaded files on the local file system in a temporary directory.
   config.active_storage.service = :test
 
+  # Keep tests independent from Redis while asserting enqueued jobs.
+  config.active_job.queue_adapter = :test
+
   # Disable caching for Action Mailer templates even if Action Controller
   # caching is enabled.
   config.action_mailer.perform_caching = false

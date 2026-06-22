@@ -134,10 +134,10 @@ LINE_CHANNEL_ACCESS_TOKEN=your-channel-access-token
 LINE_CHANNEL_SECRET=your-channel-secret
 ```
 
-環境変数を変更した後はwebコンテナを再作成します。
+環境変数を変更した後はwebコンテナとSidekiqコンテナを再作成します。
 
 ```bash
-docker compose up -d --force-recreate web
+docker compose up -d --force-recreate web sidekiq
 ```
 
 テスト通知を行うユーザーには、LINEのユーザーIDを持つ`LineConnection`が必要です。
@@ -148,8 +148,43 @@ user = User.first
 user.create_line_connection!(line_user_id: "LINE_USER_ID", status: :linked)
 ```
 
-ログイン後のプロフィール画面で「テスト通知を送信する」を押すと、登録済みのLINEユーザーIDへ通知します。
-送信成功時は`line_connections.last_notified_at`が更新されます。
+ログイン後のプロフィール画面で「テスト通知を送信する」を押すと、通知ジョブがSidekiqへ登録されます。
+Sidekiqによる送信成功時は`line_connections.last_notified_at`が更新されます。
+
+## Sidekiq・Redis設定
+
+LINE通知はActive JobからSidekiqへ登録し、Redisをキューとして非同期送信します。
+開発環境ではDocker Composeが`redis`と`sidekiq`を起動します。
+
+```dotenv
+REDIS_URL=redis://redis:6379/0
+SIDEKIQ_CONCURRENCY=5
+```
+
+初回または構成変更後はサービスをビルドして起動します。
+
+```bash
+docker compose up -d --build
+docker compose ps
+docker compose logs -f sidekiq
+```
+
+SidekiqがRedisへ接続できることは、次のコマンドでも確認できます。
+
+```bash
+docker compose exec sidekiq bundle exec rails runner 'puts ActiveJob::Base.queue_adapter.class.name'
+docker compose exec redis redis-cli ping
+```
+
+Renderでは、Web Serviceとは別に次のサービスを作成します。
+
+1. 永続化を有効にしたRender Key Valueを作成する
+2. 同じリポジトリからBackground Workerを作成する
+3. Background Workerの開始コマンドを`bundle exec sidekiq -C config/sidekiq.yml`にする
+4. Web ServiceとBackground Workerの両方へ`REDIS_URL`を設定する
+5. Background Workerへ`DATABASE_URL`、`RAILS_MASTER_KEY`、`LINE_CHANNEL_ACCESS_TOKEN`を設定する
+
+Sidekiq用Redisはキャッシュと共用せず、ジョブが削除されない永続ストアとして使用します。
 
 ## LINE Login設定
 

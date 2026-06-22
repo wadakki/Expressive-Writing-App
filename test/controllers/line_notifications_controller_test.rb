@@ -2,7 +2,10 @@ require "test_helper"
 require "minitest/mock"
 
 class LineNotificationsControllerTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
+
   setup do
+    clear_enqueued_jobs
     @user = User.create!(
       name: "LINE通知ユーザー",
       email: "line-notification@example.com",
@@ -11,25 +14,25 @@ class LineNotificationsControllerTest < ActionDispatch::IntegrationTest
     )
   end
 
-  test "sends a test notification for a linked user" do
-    @user.create_line_connection!(line_user_id: "line-user-123", status: :linked)
+  test "enqueues a test notification for a linked user" do
+    line_connection = @user.create_line_connection!(line_user_id: "line-user-123", status: :linked)
     login_as(@user)
-    sender = lambda do |line_connection: nil, message: nil|
-      assert_equal @user.line_connection, line_connection
-      assert_match(/LINE通知テスト/, message)
-      true
+
+    assert_enqueued_with(job: LineNotificationJob) do
+      post line_notification_url
     end
 
-    LineNotificationSender.stub(:call, sender) { post line_notification_url }
-
     assert_redirected_to profile_url
-    assert_equal "LINEへテスト通知を送信しました", flash[:notice]
+    assert_equal "LINEテスト通知を受け付けました。送信まで少しお待ちください", flash[:notice]
+    enqueued_job = enqueued_jobs.last
+    assert_equal line_connection.id, enqueued_job.fetch(:args).first
+    assert_match(/LINE通知テスト/, enqueued_job.fetch(:args).second)
   end
 
   test "does not send when LINE is not connected" do
     login_as(@user)
 
-    LineNotificationSender.stub(:call, -> { flunk("sender should not be called") }) do
+    assert_no_enqueued_jobs do
       post line_notification_url
     end
 
@@ -37,26 +40,26 @@ class LineNotificationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "LINE連携が完了していないため通知を送信できません", flash[:alert]
   end
 
-  test "shows a configuration error" do
+  test "shows an error when enqueueing fails" do
     @user.create_line_connection!(line_user_id: "line-user-123", status: :linked)
     login_as(@user)
-    error = LineNotificationSender::ConfigurationError.new("missing token")
+    error = ActiveJob::EnqueueError.new("Redis unavailable")
 
-    LineNotificationSender.stub(:call, ->(**) { raise error }) { post line_notification_url }
+    LineNotificationJob.stub(:perform_later, ->(*) { raise error }) { post line_notification_url }
 
     assert_redirected_to profile_url
-    assert_equal "LINEチャネルアクセストークンが設定されていません", flash[:alert]
+    assert_equal "LINE通知を受け付けられませんでした。時間をおいて再度お試しください", flash[:alert]
   end
 
-  test "shows a delivery error" do
+  test "shows an error when the job reports that it was not enqueued" do
     @user.create_line_connection!(line_user_id: "line-user-123", status: :linked)
     login_as(@user)
-    error = LineNotificationSender::DeliveryError.new("API failure")
+    failed_job = Struct.new(:successfully_enqueued?).new(false)
 
-    LineNotificationSender.stub(:call, ->(**) { raise error }) { post line_notification_url }
+    LineNotificationJob.stub(:perform_later, failed_job) { post line_notification_url }
 
     assert_redirected_to profile_url
-    assert_equal "LINE通知を送信できませんでした。時間をおいて再度お試しください", flash[:alert]
+    assert_equal "LINE通知を受け付けられませんでした。時間をおいて再度お試しください", flash[:alert]
   end
 
   test "redirects guests to login" do
