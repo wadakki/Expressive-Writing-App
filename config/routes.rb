@@ -2,12 +2,12 @@ Rails.application.routes.draw do
   resources :users, only: %i[new create]
   resource :profile, only: %i[show update]
   resource :line_notification, only: :create
-  resource :line_connection, only: %i[new destroy] do
-    get :callback
-  end
+  resource :line_connection, only: %i[new destroy]
+  get "line_connection/callback", to: "line_oauth_callbacks#show", as: :callback_line_connection
   resources :writing_entries, only: %i[index show new create edit update destroy]
   get "login", to: "user_sessions#new"
   post "login", to: "user_sessions#create"
+  get "login/line", to: "line_logins#new", as: :line_login
   delete "logout", to: "user_sessions#destroy"
   get "terms", to: "static_pages#terms"
   get "privacy", to: "static_pages#privacy"
