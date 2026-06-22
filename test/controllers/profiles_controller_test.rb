@@ -41,6 +41,21 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
                   "notification_setting[reminder_days][]", count: 7
     assert_select "input[type=checkbox][name=?][checked=checked]",
                   "notification_setting[reminder_days][]", count: 7
+    assert_select "h2", "LINE連携状況"
+    assert_select "span", "未連携"
+    assert_select "form[action=?]", line_notification_path, count: 0
+  end
+
+  test "shows LINE notification button for a linked user" do
+    @user.create_line_connection!(line_user_id: "line-user-123", status: :linked)
+    login_as(@user)
+
+    get profile_url
+
+    assert_response :success
+    assert_select "span", "連携済み"
+    assert_select "form[action=?][method=post]", line_notification_path
+    assert_select "button[type=submit]", "テスト通知を送信する"
   end
 
   test "updates the current user's profile and creates notification setting" do

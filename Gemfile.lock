@@ -142,6 +142,9 @@ GEM
     jwt (3.2.0)
       base64
     language_server-protocol (3.17.0.5)
+    line-bot-api (2.8.3)
+      base64 (~> 0.2)
+      multipart-post (~> 2.4)
     lint_roller (1.1.0)
     logger (1.7.0)
     loofah (2.25.1)
@@ -160,6 +163,7 @@ GEM
     msgpack (1.8.3)
     multi_xml (0.9.1)
       bigdecimal (>= 3.1, < 5)
+    multipart-post (2.4.1)
     net-http (0.9.1)
       uri (>= 0.11.1)
     net-imap (0.6.4.1)
@@ -358,6 +362,7 @@ DEPENDENCIES
   dotenv-rails
   jbuilder
   jsbundling-rails
+  line-bot-api
   minitest (< 6)
   pg (~> 1.1)
   puma (>= 5.0)
