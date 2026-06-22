@@ -118,3 +118,35 @@ Things you may want to cover:
 
 ##　画面遷移図のURL
 https://www.figma.com/design/iP6c8lZISGSxfOIV3WiTdz/%E7%84%A1%E9%A1%8C?node-id=0-1&t=VhqE8mXWGCtIeKfF-1
+
+## LINE Messaging API設定
+
+LINE通知にはLINE Developersで作成したMessaging APIチャネルが必要です。
+
+1. [LINE Developersコンソール](https://developers.line.biz/console/)でプロバイダーを作成する
+2. Messaging APIチャネルを作成する
+3. チャネル基本設定からチャネルシークレットを確認する
+4. Messaging API設定からチャネルアクセストークンを発行する
+5. `.env.example`を参考に`.env`へ設定する
+
+```dotenv
+LINE_CHANNEL_ACCESS_TOKEN=your-channel-access-token
+LINE_CHANNEL_SECRET=your-channel-secret
+```
+
+環境変数を変更した後はwebコンテナを再作成します。
+
+```bash
+docker compose up -d --force-recreate web
+```
+
+テスト通知を行うユーザーには、LINEのユーザーIDを持つ`LineConnection`が必要です。
+ローカル確認ではRails consoleから作成できます。
+
+```ruby
+user = User.first
+user.create_line_connection!(line_user_id: "LINE_USER_ID", status: :linked)
+```
+
+ログイン後のプロフィール画面で「テスト通知を送信する」を押すと、登録済みのLINEユーザーIDへ通知します。
+送信成功時は`line_connections.last_notified_at`が更新されます。

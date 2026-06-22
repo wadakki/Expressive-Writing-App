@@ -2,6 +2,7 @@ class ProfilesController < ApplicationController
   before_action :require_login
   before_action :set_user
   before_action :set_notification_setting
+  before_action :set_line_connection
 
   def show
     @notification_setting ||= build_default_notification_setting
@@ -27,6 +28,10 @@ class ProfilesController < ApplicationController
 
   def set_notification_setting
     @notification_setting = current_user.notification_setting
+  end
+
+  def set_line_connection
+    @line_connection = current_user.line_connection
   end
 
   def build_default_notification_setting

@@ -240,6 +240,24 @@ ja:
       notification_time_label: 通知時刻
       notification_time_hint: 選択した曜日のこの時刻に通知します。
       line_notice_heading: LINE通知について
-      line_notice_body: LINE連携と実際の通知送信は、通知機能を実装するタイミングで接続します。この画面ではプロフィール情報と通知設定をまとめて保存します。
+      line_notice_body: LINE連携済みの場合、プロフィール画面からテスト通知を送信できます。
+      line_connection_heading: LINE連携状況
+      line_connected: 連携済み
+      line_connected_description: LINE通知を受け取れる状態です。
+      line_blocked: ブロック中
+      line_blocked_description: LINE公式アカウントのブロックを解除してから再度お試しください。
+      line_not_connected: 未連携
+      line_not_connected_description: LINE公式アカウントとの連携が完了すると、通知を受け取れます。
+      line_last_notified_at: 最終通知日時：%{datetime}
+      line_never_notified: まだ通知は送信されていません。
+      line_test_submit: テスト通知を送信する
+      line_test_sending: 送信中...
     update:
       success: プロフィールを更新しました
+  line_notifications:
+    create:
+      success: LINEへテスト通知を送信しました
+      not_connected: LINE連携が完了していないため通知を送信できません
+      configuration_error: LINEチャネルアクセストークンが設定されていません
+      delivery_error: LINE通知を送信できませんでした。時間をおいて再度お試しください
+      test_message: "%{name}さん、筆記開示アプリのLINE通知テストです。通知設定が正しく連携されています。"

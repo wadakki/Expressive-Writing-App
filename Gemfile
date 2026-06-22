@@ -22,6 +22,8 @@ gem "cssbundling-rails"
 gem "jbuilder"
 # Use Sorcery for authentication
 gem "sorcery", "~> 0.18.0"
+# Send notifications through the LINE Messaging API
+gem "line-bot-api"
 # Use Redis adapter to run Action Cable in production
 # gem "redis", ">= 4.0.1"
 
