@@ -44,6 +44,8 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_select "h2", "LINE連携状況"
     assert_select "span", "未連携"
     assert_select "form[action=?]", line_notification_path, count: 0
+    assert_select "a[href=?]", new_line_connection_path, text: "LINE連携する"
+    assert_select "form[action=?]", line_connection_path, count: 0
   end
 
   test "shows LINE notification button for a linked user" do
@@ -56,6 +58,8 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_select "span", "連携済み"
     assert_select "form[action=?][method=post]", line_notification_path
     assert_select "button[type=submit]", "テスト通知を送信する"
+    assert_select "a[href=?]", new_line_connection_path, count: 0
+    assert_select "form[action=?]", line_connection_path
   end
 
   test "updates the current user's profile and creates notification setting" do
