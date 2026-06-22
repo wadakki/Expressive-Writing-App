@@ -2,6 +2,7 @@ class User < ApplicationRecord
   authenticates_with_sorcery!
 
   has_many :writing_entries, dependent: :destroy
+  has_many :authentications, dependent: :destroy
   has_one :notification_setting, dependent: :destroy
   has_one :line_connection, dependent: :destroy
 
