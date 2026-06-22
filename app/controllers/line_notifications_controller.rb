@@ -9,16 +9,15 @@ class LineNotificationsController < ApplicationController
       return
     end
 
-    LineNotificationSender.call(
-      line_connection:,
-      message: t(".test_message", name: current_user.name)
+    job = LineNotificationJob.perform_later(
+      line_connection.id,
+      t(".test_message", name: current_user.name)
     )
+    raise ActiveJob::EnqueueError, "LINE notification was not enqueued" unless job&.successfully_enqueued?
+
     redirect_to profile_path, notice: t(".success"), status: :see_other
-  rescue LineNotificationSender::ConfigurationError => error
-    Rails.logger.error("LINE notification configuration error: #{error.message}")
-    redirect_to profile_path, alert: t(".configuration_error"), status: :see_other
-  rescue LineNotificationSender::DeliveryError => error
-    Rails.logger.error("LINE notification delivery error: #{error.message}")
-    redirect_to profile_path, alert: t(".delivery_error"), status: :see_other
+  rescue ActiveJob::EnqueueError, RedisClient::Error => error
+    Rails.logger.error("LINE notification enqueue error: #{error.class}")
+    redirect_to profile_path, alert: t(".enqueue_error"), status: :see_other
   end
 end

@@ -280,8 +280,7 @@ ja:
       configuration_error: LINE Loginの設定が完了していません
   line_notifications:
     create:
-      success: LINEへテスト通知を送信しました
+      success: LINEテスト通知を受け付けました。送信まで少しお待ちください
       not_connected: LINE連携が完了していないため通知を送信できません
-      configuration_error: LINEチャネルアクセストークンが設定されていません
-      delivery_error: LINE通知を送信できませんでした。時間をおいて再度お試しください
+      enqueue_error: LINE通知を受け付けられませんでした。時間をおいて再度お試しください
       test_message: "%{name}さん、筆記開示アプリのLINE通知テストです。通知設定が正しく連携されています。"
