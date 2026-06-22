@@ -150,3 +150,41 @@ user.create_line_connection!(line_user_id: "LINE_USER_ID", status: :linked)
 
 ログイン後のプロフィール画面で「テスト通知を送信する」を押すと、登録済みのLINEユーザーIDへ通知します。
 送信成功時は`line_connections.last_notified_at`が更新されます。
+
+## LINE Login設定
+
+プロフィールからLINEアカウントを連携するには、Messaging APIチャネルと同じプロバイダーにLINE Loginチャネルを作成します。
+LINE LoginチャネルのコールバックURLには、アプリの`/line_connection/callback`を登録してください。
+
+開発環境では、`.env`に以下を設定します。
+
+```dotenv
+LINE_LOGIN_CHANNEL_ID=your-line-login-channel-id
+LINE_LOGIN_CHANNEL_SECRET=your-line-login-channel-secret
+LINE_LOGIN_REDIRECT_URI=http://localhost:3000/line_connection/callback
+```
+
+本番環境では、`LINE_LOGIN_REDIRECT_URI`を公開中のHTTPS URLへ変更します。
+
+```dotenv
+LINE_LOGIN_REDIRECT_URI=https://your-production-domain.example/line_connection/callback
+```
+
+LINE DevelopersのLINE Loginチャネルにも、使用する環境のコールバックURLを登録してください。
+`LINE_LOGIN_REDIRECT_URI`と登録URLは、プロトコル、ドメイン、ポート、パスまで完全に一致させる必要があります。
+
+本番環境のチャネルID、チャネルシークレット、リダイレクトURIは、デプロイ先の環境変数として設定し、リポジトリへコミットしません。
+開発用と本番用でLINE Loginチャネルを分ける場合は、`LINE_LOGIN_CHANNEL_ID`と`LINE_LOGIN_CHANNEL_SECRET`も環境ごとに設定します。
+
+環境変数を変更した後はwebコンテナを再作成します。
+
+```bash
+docker compose up -d --force-recreate web
+```
+
+プロフィール画面の「LINE連携する」からLINE認証を行います。認証に成功すると、以下の両方が保存されます。
+
+- `authentications`: `provider: line`とLINEユーザーID
+- `line_connections`: LINE通知先と連携日時
+
+連携解除時は、ログイン中ユーザーのLINE用`Authentication`と`LineConnection`を同一トランザクションで削除します。
