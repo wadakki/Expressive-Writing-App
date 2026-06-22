@@ -10,8 +10,8 @@ class LineConnectionsControllerTest < ActionDispatch::IntegrationTest
       @error = error
     end
 
-    def authorization_url(state:, nonce:)
-      query = URI.encode_www_form(state:, nonce:)
+    def authorization_url(state:, nonce:, bot_prompt:)
+      query = URI.encode_www_form(state:, nonce:, bot_prompt:)
       "https://access.line.me/oauth2/v2.1/authorize?#{query}"
     end
 
@@ -40,6 +40,7 @@ class LineConnectionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "access.line.me", uri.host
     assert params["state"].present?
     assert params["nonce"].present?
+    assert_equal "aggressive", params["bot_prompt"]
   end
 
   test "shows a configuration error when LINE Login is not configured" do
@@ -124,9 +125,9 @@ class LineConnectionsControllerTest < ActionDispatch::IntegrationTest
 
   test "handles an authorization cancellation" do
     client = FakeClient.new
-    start_line_login(client)
+    state = start_line_login(client)
 
-    get callback_line_connection_url, params: { error: "access_denied" }
+    get callback_line_connection_url, params: { error: "access_denied", state: }
 
     assert_redirected_to profile_url
     assert_equal "LINE連携をキャンセルしました", flash[:alert]

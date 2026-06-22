@@ -20,18 +20,19 @@ class LineLoginClient
     @requester = requester || method(:perform_post)
   end
 
-  def authorization_url(state:, nonce:)
+  def authorization_url(state:, nonce:, bot_prompt: "aggressive")
     validate_configuration!
     uri = URI(AUTHORIZATION_ENDPOINT)
-    uri.query = URI.encode_www_form(
+    params = {
       response_type: "code",
       client_id: channel_id,
       redirect_uri:,
       state:,
       scope: "profile openid",
-      nonce:,
-      bot_prompt: "aggressive"
-    )
+      nonce:
+    }
+    params[:bot_prompt] = bot_prompt if bot_prompt.present?
+    uri.query = URI.encode_www_form(params)
     uri.to_s
   end
 

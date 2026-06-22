@@ -36,6 +36,14 @@ class LineLoginClientTest < ActiveSupport::TestCase
     assert_equal "id-token", requests.second.last[:id_token]
   end
 
+  test "omits the friend prompt from a LINE login authorization URL" do
+    client = build_client
+    uri = URI(client.authorization_url(state: "state", nonce: "nonce", bot_prompt: nil))
+    params = URI.decode_www_form(uri.query).to_h
+
+    assert_not params.key?("bot_prompt")
+  end
+
   test "rejects an invalid nonce" do
     requester = lambda do |uri, _params|
       body =

@@ -18,6 +18,7 @@ class UserSessionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "form[action=?][method=post]", login_path
     assert_select "input[name=?]", "user_session[email]"
     assert_select "input[name=?]", "user_session[password]"
+    assert_select "a[href=?]", line_login_path, "LINEでログイン"
     assert_select "a[href=?]", new_user_path, "ユーザー登録"
     assert_select "header a[href=?]", login_path, "ログイン"
     assert_select "header a[href=?]", logout_path, count: 0
