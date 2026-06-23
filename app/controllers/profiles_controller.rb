@@ -10,13 +10,14 @@ class ProfilesController < ApplicationController
   end
 
   def update
-    @notification_setting ||= build_default_notification_setting
+    @notification_setting ||= build_default_notification_setting if notification_setting_updates_enabled?
     assign_update_attributes
 
     if valid_update_attributes?
       save_profile!
       redirect_to profile_path, notice: t(".success")
     else
+      @notification_setting ||= build_default_notification_setting
       render :show, status: :unprocessable_entity
     end
   end
@@ -49,12 +50,14 @@ class ProfilesController < ApplicationController
 
   def assign_update_attributes
     @user.assign_attributes(profile_params)
+    return unless notification_setting_updates_enabled?
+
     @notification_setting.assign_attributes(notification_setting_params)
   end
 
   def valid_update_attributes?
     user_valid = @user.valid?
-    notification_setting_valid = @notification_setting.valid?
+    notification_setting_valid = notification_setting_updates_enabled? ? @notification_setting.valid? : true
 
     user_valid && notification_setting_valid
   end
@@ -62,8 +65,12 @@ class ProfilesController < ApplicationController
   def save_profile!
     ActiveRecord::Base.transaction do
       @user.save!
-      @notification_setting.save!
+      @notification_setting.save! if notification_setting_updates_enabled?
     end
+  end
+
+  def notification_setting_updates_enabled?
+    @line_notifications_enabled
   end
 
   def profile_params
