@@ -1,0 +1,6 @@
+line_reminder_dispatch:
+  cron: "* * * * * Asia/Tokyo"
+  class: "LineReminderDispatchJob"
+  queue: default
+  active_job: true
+  description: "Dispatch LINE reminder notifications every minute"

@@ -13,7 +13,20 @@ class NotificationSetting < ApplicationRecord
   validates :reminder_days, presence: true, if: :notification_enabled?
   validate :reminder_days_are_valid
 
+  def due_for_reminder?(time = Time.current)
+    local_time = time.in_time_zone
+
+    notification_enabled? &&
+      reminder_days.include?(local_time.wday) &&
+      notification_time.strftime("%H:%M") == local_time.strftime("%H:%M") &&
+      not_reminded_since?(local_time.beginning_of_minute)
+  end
+
   private
+
+  def not_reminded_since?(scheduled_minute)
+    last_reminded_at.blank? || last_reminded_at < scheduled_minute
+  end
 
   def normalize_reminder_days
     values = Array(reminder_days).reject(&:blank?)
