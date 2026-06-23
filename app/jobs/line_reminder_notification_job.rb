@@ -2,6 +2,8 @@ class LineReminderNotificationJob < ApplicationJob
   queue_as :default
 
   def perform(notification_setting_id, scheduled_at)
+    return unless LineNotificationConfig.enabled?
+
     notification_setting = NotificationSetting.find_by(id: notification_setting_id)
     return unless notification_setting
 

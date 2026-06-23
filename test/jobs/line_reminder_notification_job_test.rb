@@ -3,6 +3,9 @@ require "minitest/mock"
 
 class LineReminderNotificationJobTest < ActiveJob::TestCase
   setup do
+    @original_line_notification_enabled = ENV["LINE_NOTIFICATION_ENABLED"]
+    ENV["LINE_NOTIFICATION_ENABLED"] = "true"
+
     user = User.create!(
       name: "リマインダー送信ユーザー",
       email: "reminder-delivery@example.com",
@@ -21,6 +24,10 @@ class LineReminderNotificationJobTest < ActiveJob::TestCase
     @scheduled_time = Time.zone.local(2026, 6, 22, 21, 0)
   end
 
+  teardown do
+    restore_line_notification_enabled
+  end
+
   test "sends a reminder and records the successful delivery time" do
     delivered_at = @scheduled_time + 15.seconds
     sender = lambda do |line_connection: nil, message: nil|
@@ -37,6 +44,18 @@ class LineReminderNotificationJobTest < ActiveJob::TestCase
     end
 
     assert_equal delivered_at, @notification_setting.reload.last_reminded_at
+  end
+
+  test "does not deliver when LINE notifications are disabled" do
+    ENV["LINE_NOTIFICATION_ENABLED"] = "false"
+
+    LineNotificationSender.stub(:call, ->(**) { flunk("sender should not be called") }) do
+      assert_nil LineReminderNotificationJob.perform_now(
+        @notification_setting.id,
+        @scheduled_time.iso8601
+      )
+    end
+    assert_nil @notification_setting.reload.last_reminded_at
   end
 
   test "does not deliver the same scheduled reminder twice" do
@@ -89,5 +108,15 @@ class LineReminderNotificationJobTest < ActiveJob::TestCase
     end
 
     assert_nil @notification_setting.reload.last_reminded_at
+  end
+
+  private
+
+  def restore_line_notification_enabled
+    if @original_line_notification_enabled.nil?
+      ENV.delete("LINE_NOTIFICATION_ENABLED")
+    else
+      ENV["LINE_NOTIFICATION_ENABLED"] = @original_line_notification_enabled
+    end
   end
 end

@@ -2,12 +2,22 @@ require "test_helper"
 
 class ProfilesControllerTest < ActionDispatch::IntegrationTest
   setup do
+    @original_line_notification_enabled = ENV["LINE_NOTIFICATION_ENABLED"]
+    ENV["LINE_NOTIFICATION_ENABLED"] = "true"
     @user = User.create!(
       name: "プロフィールユーザー",
       email: "profile@example.com",
       password: "password",
       password_confirmation: "password"
     )
+  end
+
+  teardown do
+    if @original_line_notification_enabled.nil?
+      ENV.delete("LINE_NOTIFICATION_ENABLED")
+    else
+      ENV["LINE_NOTIFICATION_ENABLED"] = @original_line_notification_enabled
+    end
   end
 
   test "redirects guests to login" do
@@ -46,6 +56,23 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_select "form[action=?]", line_notification_path, count: 0
     assert_select "a[href=?]", new_line_connection_path, text: "LINE連携する"
     assert_select "form[action=?]", line_connection_path, count: 0
+  end
+
+  test "shows that LINE notifications are disabled when configured off" do
+    @user.create_line_connection!(line_user_id: "line-user-123", status: :linked)
+    login_as(@user)
+
+    with_line_notification_enabled("false") do
+      get profile_url
+    end
+
+    assert_response :success
+    assert_select "span", "連携済み"
+    assert_select "[role=status]", text: /LINE通知は停止中です/
+    assert_select "[role=status]", text: /無料Render構成のためLINE通知は停止中です/
+    assert_select "form[action=?][method=post]", line_notification_path, count: 0
+    assert_select "button[type=submit]", text: "テスト通知を送信する", count: 0
+    assert_select "form[action=?]", line_connection_path
   end
 
   test "shows LINE notification button for a linked user" do
@@ -314,6 +341,18 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def with_line_notification_enabled(value)
+    original_value = ENV["LINE_NOTIFICATION_ENABLED"]
+    ENV["LINE_NOTIFICATION_ENABLED"] = value
+    yield
+  ensure
+    if original_value.nil?
+      ENV.delete("LINE_NOTIFICATION_ENABLED")
+    else
+      ENV["LINE_NOTIFICATION_ENABLED"] = original_value
+    end
+  end
 
   def login_as(user)
     post login_url, params: {

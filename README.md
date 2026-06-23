@@ -129,6 +129,7 @@ LINE通知にはLINE Developersで作成したMessaging APIチャネルが必要
 4. `.env.example`を参考に`.env`へ設定する
 
 ```dotenv
+LINE_NOTIFICATION_ENABLED=true
 LINE_CHANNEL_ACCESS_TOKEN=your-channel-access-token
 ```
 
@@ -148,6 +149,9 @@ user.create_line_connection!(line_user_id: "LINE_USER_ID", status: :linked)
 
 ログイン後のプロフィール画面で「テスト通知を送信する」を押すと、通知ジョブがSidekiqへ登録されます。
 Sidekiqによる送信成功時は`line_connections.last_notified_at`が更新されます。
+
+Render無料構成ではBackground Workerを使用しないため、`LINE_NOTIFICATION_ENABLED=false`を設定します。
+この場合、プロフィール画面にLINE通知停止中の案内を表示し、テスト通知とLINEリマインダー送信は行いません。
 
 ## アプリURL環境変数
 
@@ -188,7 +192,7 @@ docker compose exec sidekiq bundle exec rails runner 'puts ActiveJob::Base.queue
 docker compose exec redis redis-cli ping
 ```
 
-Renderでは、Web Serviceとは別に次のサービスを作成します。
+RenderでLINE通知とLINEリマインダーを有効化する場合は、Web Serviceとは別に次のサービスを作成します。
 
 1. 永続化を有効にしたRender Key Valueを作成する
 2. 同じリポジトリからBackground Workerを作成する

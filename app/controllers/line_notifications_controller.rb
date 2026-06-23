@@ -1,5 +1,6 @@
 class LineNotificationsController < ApplicationController
   before_action :require_login
+  before_action :ensure_line_notifications_enabled
 
   def create
     line_connection = current_user.line_connection
@@ -19,5 +20,13 @@ class LineNotificationsController < ApplicationController
   rescue ActiveJob::EnqueueError, RedisClient::Error => error
     Rails.logger.error("LINE notification enqueue error: #{error.class}")
     redirect_to profile_path, alert: t(".enqueue_error"), status: :see_other
+  end
+
+  private
+
+  def ensure_line_notifications_enabled
+    return if LineNotificationConfig.enabled?
+
+    redirect_to profile_path, alert: t(".disabled"), status: :see_other
   end
 end
