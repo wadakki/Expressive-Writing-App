@@ -284,3 +284,5 @@ ja:
       not_connected: LINE連携が完了していないため通知を送信できません
       enqueue_error: LINE通知を受け付けられませんでした。時間をおいて再度お試しください
       test_message: "%{name}さん、筆記開示アプリのLINE通知テストです。通知設定が正しく連携されています。"
+  line_reminders:
+    message: "%{name}さん、筆記開示を書く時間となりました。今日の気持ちを整理してみませんか？\n%{url}"

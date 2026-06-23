@@ -125,13 +125,11 @@ LINE通知にはLINE Developersで作成したMessaging APIチャネルが必要
 
 1. [LINE Developersコンソール](https://developers.line.biz/console/)でプロバイダーを作成する
 2. Messaging APIチャネルを作成する
-3. チャネル基本設定からチャネルシークレットを確認する
-4. Messaging API設定からチャネルアクセストークンを発行する
-5. `.env.example`を参考に`.env`へ設定する
+3. Messaging API設定からチャネルアクセストークンを発行する
+4. `.env.example`を参考に`.env`へ設定する
 
 ```dotenv
 LINE_CHANNEL_ACCESS_TOKEN=your-channel-access-token
-LINE_CHANNEL_SECRET=your-channel-secret
 ```
 
 環境変数を変更した後はwebコンテナとSidekiqコンテナを再作成します。
@@ -150,6 +148,20 @@ user.create_line_connection!(line_user_id: "LINE_USER_ID", status: :linked)
 
 ログイン後のプロフィール画面で「テスト通知を送信する」を押すと、通知ジョブがSidekiqへ登録されます。
 Sidekiqによる送信成功時は`line_connections.last_notified_at`が更新されます。
+
+## アプリURL環境変数
+
+LINEリマインダー通知本文に含める筆記開示URLは、RailsのURLヘルパーから生成します。
+本番環境ではデプロイ先の環境変数として、公開中のドメインを設定してください。
+
+```dotenv
+APP_HOST=your-production-domain.example
+APP_PROTOCOL=https
+```
+
+通常の本番環境ではポート指定は不要です。非標準ポートを使う場合のみ、必要に応じて`APP_PORT`を追加してください。
+開発環境では`.env`、RenderではWeb ServiceとBackground WorkerそれぞれのEnvironment Variablesに設定します。
+`.env.example`はキー名の見本として使い、実際の値や秘密情報はコミットしません。
 
 ## Sidekiq・Redis設定
 
@@ -181,10 +193,46 @@ Renderでは、Web Serviceとは別に次のサービスを作成します。
 1. 永続化を有効にしたRender Key Valueを作成する
 2. 同じリポジトリからBackground Workerを作成する
 3. Background Workerの開始コマンドを`bundle exec sidekiq -C config/sidekiq.yml`にする
-4. Web ServiceとBackground Workerの両方へ`REDIS_URL`を設定する
+4. Web ServiceとBackground Workerの両方へ`REDIS_URL`、`APP_HOST`、`APP_PROTOCOL`を設定する
 5. Background Workerへ`DATABASE_URL`、`RAILS_MASTER_KEY`、`LINE_CHANNEL_ACCESS_TOKEN`を設定する
+6. LINE Loginを使用するWeb Serviceへ`LINE_LOGIN_CHANNEL_ID`、`LINE_LOGIN_CHANNEL_SECRET`、`LINE_LOGIN_REDIRECT_URI`を設定する
 
 Sidekiq用Redisはキャッシュと共用せず、ジョブが削除されない永続ストアとして使用します。
+
+## LINEリマインダー定期実行
+
+sidekiq-cronが日本時間で1分ごとに通知設定を確認します。
+次の条件をすべて満たすユーザーへLINEリマインダーを送信します。
+
+- 通知設定がON
+- 現在の曜日が`reminder_days`に含まれる
+- 現在時刻が`notification_time`と同じ時・分
+- LINE連携状態が`linked`
+- 同じ予定時刻のリマインダーをまだ送信していない
+
+cron定義は`config/schedule.yml`、二重送信防止の最終送信日時は
+`notification_settings.last_reminded_at`で管理します。
+
+登録されたcron Jobは次のコマンドで確認できます。
+
+```bash
+docker compose exec sidekiq bundle exec rails runner \
+  'job = Sidekiq::Cron::Job.find("line_reminder_dispatch"); puts [job&.name, job&.cron, job&.status].join(" | ")'
+```
+
+開発環境で送信対象を手動確認する場合は、プロフィール画面の通知曜日と通知時刻を
+現在の日本時間に合わせ、Sidekiqログを表示します。
+
+```bash
+docker compose logs -f sidekiq
+```
+
+送信成功後はRails consoleで`last_reminded_at`を確認できます。
+
+```ruby
+user = User.find_by!(email: "登録済みメールアドレス")
+user.notification_setting.last_reminded_at
+```
 
 ## LINE Login設定
 

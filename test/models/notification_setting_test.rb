@@ -117,16 +117,76 @@ class NotificationSettingTest < ActiveSupport::TestCase
     assert notification_setting.valid?
   end
 
+  test "is due at the configured day and minute in Tokyo" do
+    notification_setting = build_notification_setting(
+      notification_enabled: true,
+      notification_time: "21:00",
+      reminder_days: [ 1 ]
+    )
+
+    assert notification_setting.due_for_reminder?(Time.utc(2026, 6, 22, 12, 0, 30))
+  end
+
+  test "is not due when notification is disabled" do
+    notification_setting = build_notification_setting(
+      notification_enabled: false,
+      notification_time: "21:00",
+      reminder_days: [ 1 ]
+    )
+
+    assert_not notification_setting.due_for_reminder?(Time.zone.local(2026, 6, 22, 21, 0))
+  end
+
+  test "is not due on a different day or minute" do
+    notification_setting = build_notification_setting(
+      notification_enabled: true,
+      notification_time: "21:00",
+      reminder_days: [ 1 ]
+    )
+
+    assert_not notification_setting.due_for_reminder?(Time.zone.local(2026, 6, 23, 21, 0))
+    assert_not notification_setting.due_for_reminder?(Time.zone.local(2026, 6, 22, 21, 1))
+  end
+
+  test "is not due again after the scheduled minute was reminded" do
+    scheduled_time = Time.zone.local(2026, 6, 22, 21, 0)
+    notification_setting = build_notification_setting(
+      notification_enabled: true,
+      notification_time: "21:00",
+      reminder_days: [ 1 ]
+    )
+    notification_setting.last_reminded_at = scheduled_time + 10.seconds
+
+    assert_not notification_setting.due_for_reminder?(scheduled_time)
+  end
+
+  test "can be reminded at the next configured occurrence" do
+    notification_setting = build_notification_setting(
+      notification_enabled: true,
+      notification_time: "21:00",
+      reminder_days: [ 1 ],
+      last_reminded_at: Time.zone.local(2026, 6, 15, 21, 0)
+    )
+
+    assert notification_setting.due_for_reminder?(Time.zone.local(2026, 6, 22, 21, 0))
+  end
+
+  test "stores the last reminded timestamp" do
+    assert_equal :datetime, NotificationSetting.columns_hash["last_reminded_at"].type
+  end
+
   private
 
   def build_notification_setting(user: @user, notification_enabled: false,
                                  notification_time: "21:00",
-                                 reminder_days: NotificationSetting::VALID_REMINDER_DAYS)
+                                 reminder_days: NotificationSetting::VALID_REMINDER_DAYS,
+                                 last_reminded_at: nil)
     NotificationSetting.new(
       user:,
       notification_enabled:,
       notification_time:,
-      reminder_days:
+      reminder_days:,
+      last_reminded_at:
     )
   end
 end

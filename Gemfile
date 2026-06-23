@@ -26,6 +26,8 @@ gem "sorcery", "~> 0.18.0"
 gem "line-bot-api"
 # Process background jobs with Redis
 gem "sidekiq", "~> 8.1"
+# Schedule recurring Sidekiq jobs
+gem "sidekiq-cron", "~> 2.4"
 # Use Redis adapter to run Action Cable in production
 # gem "redis", ">= 4.0.1"
 
