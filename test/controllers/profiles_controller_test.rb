@@ -70,6 +70,12 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_select "span", "連携済み"
     assert_select "[role=status]", text: /LINE通知は停止中です/
     assert_select "[role=status]", text: /無料Render構成のためLINE通知は停止中です/
+    assert_select "div[aria-disabled=true]"
+    assert_select "input[name=?][type=checkbox][disabled]", "notification_setting[notification_enabled]"
+    assert_select "fieldset[disabled]"
+    assert_select "input[type=checkbox][name=?][disabled]",
+                  "notification_setting[reminder_days][]", count: 7
+    assert_select "input[name=?][type=time][disabled]", "notification_setting[notification_time]"
     assert_select "form[action=?][method=post]", line_notification_path, count: 0
     assert_select "button[type=submit]", text: "テスト通知を送信する", count: 0
     assert_select "form[action=?]", line_connection_path
@@ -116,6 +122,68 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_predicate @user.notification_setting, :notification_enabled?
     assert_equal "08:15", @user.notification_setting.notification_time.strftime("%H:%M")
     assert_equal [ 1, 3, 5 ], @user.notification_setting.reminder_days
+  end
+
+  test "updates profile but does not create notification setting when LINE notifications are disabled" do
+    login_as(@user)
+
+    with_line_notification_enabled("false") do
+      assert_no_difference("NotificationSetting.count") do
+        patch profile_url, params: {
+          user: {
+            name: "通知停止中ユーザー",
+            email: "notification-disabled@example.com",
+            password: "",
+            password_confirmation: ""
+          },
+          notification_setting: {
+            notification_enabled: "1",
+            notification_time: "08:15",
+            reminder_days: %w[1 3 5]
+          }
+        }
+      end
+    end
+
+    assert_redirected_to profile_url
+    assert_equal "プロフィールを更新しました", flash[:notice]
+    @user.reload
+    assert_equal "通知停止中ユーザー", @user.name
+    assert_equal "notification-disabled@example.com", @user.email
+    assert_nil @user.notification_setting
+  end
+
+  test "updates profile but does not change notification setting when LINE notifications are disabled" do
+    notification_setting = @user.create_notification_setting!(
+      notification_enabled: true,
+      notification_time: "07:30",
+      reminder_days: [ 1, 3, 5 ]
+    )
+    login_as(@user)
+
+    with_line_notification_enabled("false") do
+      patch profile_url, params: {
+        user: {
+          name: "通知設定保持ユーザー",
+          email: @user.email,
+          password: "",
+          password_confirmation: ""
+        },
+        notification_setting: {
+          notification_enabled: "0",
+          notification_time: "22:45",
+          reminder_days: %w[0 6]
+        }
+      }
+    end
+
+    assert_redirected_to profile_url
+    assert_equal "プロフィールを更新しました", flash[:notice]
+    assert_equal "通知設定保持ユーザー", @user.reload.name
+    notification_setting.reload
+    assert_predicate notification_setting, :notification_enabled?
+    assert_equal "07:30", notification_setting.notification_time.strftime("%H:%M")
+    assert_equal [ 1, 3, 5 ], notification_setting.reminder_days
   end
 
   test "updates the current user's password" do
