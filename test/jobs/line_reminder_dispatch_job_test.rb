@@ -5,8 +5,15 @@ class LineReminderDispatchJobTest < ActiveJob::TestCase
   include ActiveJob::TestHelper
 
   setup do
+    @original_line_notification_enabled = ENV["LINE_NOTIFICATION_ENABLED"]
+    ENV["LINE_NOTIFICATION_ENABLED"] = "true"
+
     clear_enqueued_jobs
     @scheduled_time = Time.zone.local(2026, 6, 22, 21, 0)
+  end
+
+  teardown do
+    restore_line_notification_enabled
   end
 
   test "enqueues a reminder for an enabled due and linked user" do
@@ -16,6 +23,15 @@ class LineReminderDispatchJobTest < ActiveJob::TestCase
       job: LineReminderNotificationJob,
       args: [ setting.id, @scheduled_time.iso8601 ]
     ) do
+      LineReminderDispatchJob.perform_now(@scheduled_time.iso8601)
+    end
+  end
+
+  test "does not enqueue reminders when LINE notifications are disabled" do
+    ENV["LINE_NOTIFICATION_ENABLED"] = "false"
+    create_setting(email: "disabled-line-notification@example.com")
+
+    assert_no_enqueued_jobs do
       LineReminderDispatchJob.perform_now(@scheduled_time.iso8601)
     end
   end
@@ -51,6 +67,14 @@ class LineReminderDispatchJobTest < ActiveJob::TestCase
   end
 
   private
+
+  def restore_line_notification_enabled
+    if @original_line_notification_enabled.nil?
+      ENV.delete("LINE_NOTIFICATION_ENABLED")
+    else
+      ENV["LINE_NOTIFICATION_ENABLED"] = @original_line_notification_enabled
+    end
+  end
 
   def create_setting(email:, notification_enabled: true, notification_time: "21:00",
                      reminder_days: [ 1 ], line_status: :linked)

@@ -5,6 +5,8 @@ class LineNotificationsControllerTest < ActionDispatch::IntegrationTest
   include ActiveJob::TestHelper
 
   setup do
+    @original_line_notification_enabled = ENV["LINE_NOTIFICATION_ENABLED"]
+    ENV["LINE_NOTIFICATION_ENABLED"] = "true"
     clear_enqueued_jobs
     @user = User.create!(
       name: "LINE通知ユーザー",
@@ -12,6 +14,14 @@ class LineNotificationsControllerTest < ActionDispatch::IntegrationTest
       password: "password",
       password_confirmation: "password"
     )
+  end
+
+  teardown do
+    if @original_line_notification_enabled.nil?
+      ENV.delete("LINE_NOTIFICATION_ENABLED")
+    else
+      ENV["LINE_NOTIFICATION_ENABLED"] = @original_line_notification_enabled
+    end
   end
 
   test "enqueues a test notification for a linked user" do
@@ -27,6 +37,20 @@ class LineNotificationsControllerTest < ActionDispatch::IntegrationTest
     enqueued_job = enqueued_jobs.last
     assert_equal line_connection.id, enqueued_job.fetch(:args).first
     assert_match(/LINE通知テスト/, enqueued_job.fetch(:args).second)
+  end
+
+  test "does not enqueue when LINE notifications are disabled" do
+    @user.create_line_connection!(line_user_id: "line-user-123", status: :linked)
+    login_as(@user)
+
+    with_line_notification_enabled("false") do
+      assert_no_enqueued_jobs do
+        post line_notification_url
+      end
+    end
+
+    assert_redirected_to profile_url
+    assert_equal "現在、無料Render構成のためLINE通知は停止中です。有料Worker設定後に通知とリマインダー送信を利用できます。", flash[:alert]
   end
 
   test "does not send when LINE is not connected" do
@@ -70,6 +94,18 @@ class LineNotificationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def with_line_notification_enabled(value)
+    original_value = ENV["LINE_NOTIFICATION_ENABLED"]
+    ENV["LINE_NOTIFICATION_ENABLED"] = value
+    yield
+  ensure
+    if original_value.nil?
+      ENV.delete("LINE_NOTIFICATION_ENABLED")
+    else
+      ENV["LINE_NOTIFICATION_ENABLED"] = original_value
+    end
+  end
 
   def login_as(user)
     post login_url, params: {

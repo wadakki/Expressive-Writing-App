@@ -2,6 +2,8 @@ class LineReminderDispatchJob < ApplicationJob
   queue_as :default
 
   def perform(scheduled_at = Time.current.iso8601)
+    return unless LineNotificationConfig.enabled?
+
     scheduled_time = Time.zone.parse(scheduled_at).beginning_of_minute
 
     NotificationSetting.where(notification_enabled: true).includes(user: :line_connection).find_each do |setting|

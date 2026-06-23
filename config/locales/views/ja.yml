@@ -227,7 +227,7 @@ ja:
       notification_description: LINE通知のON/OFF、通知曜日、通知時刻を設定できます。
       notification_error_heading: 通知設定は保存されていません
       notification_enabled_label: LINE通知
-      notification_enabled_hint: オンにすると、設定した時刻に筆記開示のリマインド通知を受け取る想定です。
+      notification_enabled_hint: オンにすると、設定した時刻に筆記開示のリマインド通知を受け取れます。
       notification_enabled_switch: 通知をオンにする
       reminder_days_label: 通知曜日
       reminder_days_hint: LINE通知を受け取る曜日を選択してください。
@@ -243,9 +243,12 @@ ja:
       notification_time_hint: 選択した曜日のこの時刻に通知します。
       line_notice_heading: LINE通知について
       line_notice_body: LINE連携済みの場合、プロフィール画面からテスト通知を送信できます。
+      line_notification_disabled_heading: LINE通知は停止中です
+      line_notification_disabled_body: 現在、無料Render構成のためLINE通知は停止中です。有料Worker設定後に通知とリマインダー送信を利用できます。
       line_connection_heading: LINE連携状況
       line_connected: 連携済み
       line_connected_description: LINE通知を受け取れる状態です。
+      line_connected_disabled_description: LINE連携は完了していますが、現在は通知送信を停止しています。
       line_blocked: ブロック中
       line_blocked_description: LINE公式アカウントのブロックを解除してから再度お試しください。
       line_not_connected: 未連携
@@ -283,6 +286,7 @@ ja:
       success: LINEテスト通知を受け付けました。送信まで少しお待ちください
       not_connected: LINE連携が完了していないため通知を送信できません
       enqueue_error: LINE通知を受け付けられませんでした。時間をおいて再度お試しください
+      disabled: 現在、無料Render構成のためLINE通知は停止中です。有料Worker設定後に通知とリマインダー送信を利用できます。
       test_message: "%{name}さん、筆記開示アプリのLINE通知テストです。通知設定が正しく連携されています。"
   line_reminders:
     message: "%{name}さん、筆記開示を書く時間となりました。今日の気持ちを整理してみませんか？\n%{url}"

@@ -3,6 +3,9 @@ require "minitest/mock"
 
 class LineNotificationJobTest < ActiveJob::TestCase
   setup do
+    @original_line_notification_enabled = ENV["LINE_NOTIFICATION_ENABLED"]
+    ENV["LINE_NOTIFICATION_ENABLED"] = "true"
+
     user = User.create!(
       name: "LINEジョブユーザー",
       email: "line-job@example.com",
@@ -15,6 +18,10 @@ class LineNotificationJobTest < ActiveJob::TestCase
     )
   end
 
+  teardown do
+    restore_line_notification_enabled
+  end
+
   test "sends a notification through the sender" do
     sender = lambda do |line_connection: nil, message: nil|
       assert_equal @line_connection, line_connection
@@ -24,6 +31,14 @@ class LineNotificationJobTest < ActiveJob::TestCase
 
     LineNotificationSender.stub(:call, sender) do
       LineNotificationJob.perform_now(@line_connection.id, "ジョブ通知")
+    end
+  end
+
+  test "does nothing when LINE notifications are disabled" do
+    ENV["LINE_NOTIFICATION_ENABLED"] = "false"
+
+    LineNotificationSender.stub(:call, ->(**) { flunk("sender should not be called") }) do
+      assert_nil LineNotificationJob.perform_now(@line_connection.id, "ジョブ通知")
     end
   end
 
@@ -51,6 +66,16 @@ class LineNotificationJobTest < ActiveJob::TestCase
       assert_raises(LineNotificationSender::DeliveryError) do
         LineNotificationJob.perform_now(@line_connection.id, "ジョブ通知")
       end
+    end
+  end
+
+  private
+
+  def restore_line_notification_enabled
+    if @original_line_notification_enabled.nil?
+      ENV.delete("LINE_NOTIFICATION_ENABLED")
+    else
+      ENV["LINE_NOTIFICATION_ENABLED"] = @original_line_notification_enabled
     end
   end
 end
