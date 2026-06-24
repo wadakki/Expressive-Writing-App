@@ -34,6 +34,15 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to root_url
     assert_equal "ユーザー登録が完了しました", flash[:notice]
+
+    follow_redirect!
+    assert_redirected_to writing_entries_url
+
+    follow_redirect!
+    assert_response :success
+    assert_select "nav", text: /筆記開示を始める/
+    assert_select "nav", text: /Test Userさん/
+    assert_select "a[href=?]", logout_path, "ログアウト"
   end
 
   test "shows validation errors with invalid parameters" do
@@ -53,6 +62,9 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_select "[role=alert]", text: /名前を入力してください/
     assert_select "[role=alert]", text: /メールアドレスは不正な値です/
     assert_select "form[action=?]", users_path
+
+    get writing_entries_url
+    assert_redirected_to login_url
   end
 
   test "shows a Japanese error for a duplicate email" do
